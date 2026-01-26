@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="LMUElectronicBridge.SettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins"
+             xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins">
+
+    <ScrollViewer Background="#111111">
+        <StackPanel Margin="15">
+
+            <styles:SHSection Title="MASTER INITIALIZATION" Margin="0,0,0,20">
+                <Button Content="SYNC ALL VALUES FROM LMU" Click="SyncAll_Click" 
+                        Height="45" Background="#00FF00" Foreground="Black" FontWeight="Bold"
+                        ToolTip="Fetch current TC and ABS maps from the LMU Data Plugin."/>
+            </styles:SHSection>
+
+            <styles:SHSection Title="TRACTION CONTROL (MAIN)" ShowSeparator="True">
+                <StackPanel>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainIncrease" FriendlyName="TC Main +"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainDecrease" FriendlyName="TC Main -"/>
+                    <TextBlock Text="{Binding Settings.TC_Main, StringFormat='Synced Level: {0}'}" FontSize="16" Foreground="#00FF00" Margin="0,5"/>
+                </StackPanel>
+            </styles:SHSection>
+
+            <styles:SHSection Title="TC POWER CUT" ShowSeparator="True">
+                <StackPanel>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutIncrease" FriendlyName="TC Cut +"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutDecrease" FriendlyName="TC Cut -"/>
+                    <TextBlock Text="{Binding Settings.TC_Cut, StringFormat='Synced Level: {0}'}" FontSize="16" Foreground="#00FF00" Margin="0,5"/>
+                </StackPanel>
+            </styles:SHSection>
+
+            <styles:SHSection Title="TC SLIP ANGLE" ShowSeparator="True">
+                <StackPanel>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipIncrease" FriendlyName="TC Slip +"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipDecrease" FriendlyName="TC Slip -"/>
+                    <TextBlock Text="{Binding Settings.TC_Slip, StringFormat='Synced Level: {0}'}" FontSize="16" Foreground="#00FF00" Margin="0,5"/>
+                </StackPanel>
+            </styles:SHSection>
+
+            <styles:SHSection Title="ANTI-LOCK BRAKES (ABS)" ShowSeparator="True">
+                <StackPanel>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSIncrease" FriendlyName="ABS +"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSDecrease" FriendlyName="ABS -"/>
+                    <TextBlock Text="{Binding Settings.ABS, StringFormat='Synced Level: {0}'}" FontSize="16" Foreground="#00FF00" Margin="0,5"/>
+                </StackPanel>
+            </styles:SHSection>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
