@@ -80,18 +80,43 @@ namespace LMUElectronicBridge
             }
         }
 
+        // Inside LMUElectronicBridge.cs
+
         public void SyncAllFromLMU()
         {
             Settings.TC_Main = GetSafeInt("lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLMAP");
             Settings.TC_Cut = GetSafeInt("lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLPOWERCUTMAP");
             Settings.TC_Slip = GetSafeInt("lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLSLIPANGLEMAP");
             Settings.ABS = GetSafeInt("lmuDataPlugin.Redadeg.lmu.Extended.VM_ANTILOCKBRAKESYSTEMMAP");
+
+            OnPropertyChanged(null);
+        }
+
+        // New Method: Apply user-defined values from the UI
+        public void ApplyManualValues()
+        {
+            Settings.TC_Main = Settings.TC_Main_User;
+            Settings.TC_Cut = Settings.TC_Cut_User;
+            Settings.TC_Slip = Settings.TC_Slip_User;
+            Settings.ABS = Settings.ABS_User;
+
+            OnPropertyChanged(null);
         }
 
         private int GetSafeInt(string prop)
         {
             var val = PluginManager.GetPropertyValue(prop);
-            return val != null ? Convert.ToInt32(val) : 0;
+            // Null check: If property doesn't exist or is null, return 0
+            if (val == null) return 0;
+
+            try
+            {
+                return Convert.ToInt32(val);
+            }
+            catch
+            {
+                return 0; // Fallback if data is not a number
+            }
         }
 
         public void End(PluginManager pluginManager) => this.SaveCommonSettings("ElectronicSettings", Settings);

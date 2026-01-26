@@ -1,64 +1,73 @@
-﻿<UserControl
+﻿<UserControl x:Class="LMUElectronicBridge.SettingsControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins"
-             xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="LMUElectronicBridge.SettingsControl"
-             d:DesignWidth="562.115">
+             xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins">
 
     <ScrollViewer Background="#111111">
         <StackPanel Margin="15">
 
-            <styles:SHSection Title="SYNC CONTROL" ShowSeparator="True">
+            <styles:SHSection Title="INITIALIZATION MODES" ShowSeparator="True">
                 <StackPanel>
-                    <Button Content="MANUAL SYNC FROM LMU" 
-                            Click="SyncAll_Click" 
-                            Height="40" 
-                            Background="#00FF00" 
-                            Foreground="Black" 
-                            FontWeight="Bold" 
-                            Margin="0,0,0,10"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="SYNC FROM GAME" Click="SyncAll_Click" Height="40" Background="#00FF00" Foreground="Black" FontWeight="Bold" Margin="0,0,5,0"/>
+                        <Button Grid.Column="1" Content="USE MANUAL DEFAULTS" Click="ApplyManual_Click" Height="40" Background="#333333" Foreground="White" Margin="5,0,0,0"/>
+                    </Grid>
 
-                    <TextBlock Text="Steering Wheel Mapping:" Foreground="#888888" FontSize="10" Margin="0,5,0,2"/>
+                    <TextBlock Text="Wheel Mapping for Sync:" Foreground="#888888" FontSize="10" Margin="0,10,0,2"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.SyncAllFromGame" FriendlyName="Sync Electronics from Game"/>
-
-                    <TextBlock Text="Note: Values sync automatically when session resets or changes." 
-                               Foreground="#666666" FontSize="9" FontStyle="Italic" Margin="0,5,0,0"/>
                 </StackPanel>
             </styles:SHSection>
 
             <styles:SHSection Title="TRACTION CONTROL (MAIN)" ShowSeparator="True">
                 <StackPanel>
+                    <DockPanel LastChildFill="False" Margin="0,0,0,5">
+                        <TextBlock Text="Set Manual Default:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Settings.TC_Main_User}" Width="50" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
+                    </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainIncrease" FriendlyName="TC Main +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainDecrease" FriendlyName="TC Main -"/>
-                    <TextBlock Text="{Binding Settings.TC_Main, StringFormat=Synced Level: \{0\}}" 
-                               FontSize="16" Foreground="#00FF00" FontWeight="Bold" Margin="0,5"/>
+                    <TextBlock Text="{Binding Settings.TC_Main, StringFormat='Active Level: {0}'}" FontSize="16" Foreground="#00FF00" FontWeight="Bold"/>
                 </StackPanel>
             </styles:SHSection>
 
             <styles:SHSection Title="TC POWER CUT" ShowSeparator="True">
                 <StackPanel>
+                    <DockPanel LastChildFill="False" Margin="0,0,0,5">
+                        <TextBlock Text="Set Manual Default:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Settings.TC_Cut_User}" Width="50" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
+                    </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutIncrease" FriendlyName="TC Cut +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutDecrease" FriendlyName="TC Cut -"/>
-                    <TextBlock Text="{Binding Settings.TC_Cut, StringFormat=Synced Level: \{0\}}" 
-                               FontSize="16" Foreground="#00FF00" FontWeight="Bold" Margin="0,5"/>
+                    <TextBlock Text="{Binding Settings.TC_Cut, StringFormat='Active Level: {0}'}" FontSize="16" Foreground="#00FF00" FontWeight="Bold"/>
                 </StackPanel>
             </styles:SHSection>
 
             <styles:SHSection Title="TC SLIP ANGLE" ShowSeparator="True">
                 <StackPanel>
+                    <DockPanel LastChildFill="False" Margin="0,0,0,5">
+                        <TextBlock Text="Set Manual Default:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Settings.TC_Slip_User}" Width="50" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
+                    </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipIncrease" FriendlyName="TC Slip +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipDecrease" FriendlyName="TC Slip -"/>
-                    <TextBlock Text="{Binding Settings.TC_Slip, StringFormat=Synced Level: \{0\}}" 
-                               FontSize="16" Foreground="#00FF00" FontWeight="Bold" Margin="0,5"/>
+                    <TextBlock Text="{Binding Settings.TC_Slip, StringFormat='Active Level: {0}'}" FontSize="16" Foreground="#00FF00" FontWeight="Bold"/>
                 </StackPanel>
             </styles:SHSection>
 
             <styles:SHSection Title="ANTI-LOCK BRAKES (ABS)" ShowSeparator="True">
                 <StackPanel>
+                    <DockPanel LastChildFill="False" Margin="0,0,0,5">
+                        <TextBlock Text="Set Manual Default:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Settings.ABS_User}" Width="50" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
+                    </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSIncrease" FriendlyName="ABS +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSDecrease" FriendlyName="ABS -"/>
-                    <TextBlock Text="{Binding Settings.ABS, StringFormat=Synced Level: \{0\}}" 
-                               FontSize="16" Foreground="#00FF00" FontWeight="Bold" Margin="0,5"/>
+                    <TextBlock Text="{Binding Settings.ABS, StringFormat='Active Level: {0}'}" FontSize="16" Foreground="#00FF00" FontWeight="Bold"/>
                 </StackPanel>
             </styles:SHSection>
 
