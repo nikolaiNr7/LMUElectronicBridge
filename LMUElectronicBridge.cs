@@ -20,7 +20,7 @@ namespace LMUElectronicBridge
         public void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         public ImageSource PictureIcon => null;
-        public string LeftMenuTitle => "LMU Bridge";
+        public string LeftMenuTitle => "LMU Electronics Bridge";
 
         public void Init(PluginManager pluginManager)
         {
@@ -46,10 +46,19 @@ namespace LMUElectronicBridge
         private void RegisterControlActions(string name, Func<int> getter, Action<int> setter, int maxValue)
         {
             this.AddAction(name + "Increase", (a, b) => {
-                if (getter() < maxValue) { setter(getter() + 1); OnPropertyChanged(name); }
+                if (getter() < maxValue)
+                {
+                    setter(getter() + 1);
+                    OnPropertyChanged(nameof(Settings));
+                }
             });
+
             this.AddAction(name + "Decrease", (a, b) => {
-                if (getter() > Settings.MinValue) { setter(getter() - 1); OnPropertyChanged(name); }
+                if (getter() > Settings.MinValue)
+                {
+                    setter(getter() - 1);
+                    OnPropertyChanged(nameof(Settings));
+                }
             });
         }
 
