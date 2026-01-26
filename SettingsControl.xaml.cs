@@ -18,5 +18,10 @@ namespace LMUElectronicBridge
         {
             Plugin.SyncAllFromLMU();
         }
+
+        private void ApplyManual_Click(object sender, RoutedEventArgs e)
+        {
+            Plugin.ApplyManualValues();
+        }
     }
 }
