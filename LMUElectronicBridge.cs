@@ -7,125 +7,92 @@ namespace LMUElectronicBridge
 {
     [PluginName("LMU Electronic Bridge")]
     [PluginAuthor("Nikolai Schlott")]
-    [PluginDescription("Syncs In-Car electronics for LMU on session changes or lap resets.")]
     public class LMUElectronicBridge : IPlugin, IWPFSettingsV2, INotifyPropertyChanged
     {
         public PluginManager PluginManager { get; set; }
         public ElectronicSettings Settings { get; private set; }
 
+        public ImageSource PictureIcon => null;
+        public string LeftMenuTitle => "LMU Electronics Bridge";
+
         private string lastSessionType = null;
         private int lastLapCount = 0;
 
         public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        public ImageSource PictureIcon => null;
-        public string LeftMenuTitle => "LMU Electronics Bridge";
+        public void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         public void Init(PluginManager pluginManager)
         {
             PluginManager = pluginManager;
             Settings = this.ReadCommonSettings<ElectronicSettings>("ElectronicSettings", () => new ElectronicSettings());
 
-            // Expose properties to Dash Studio
             this.AttachDelegate("TC_Main", () => Settings.TC_Main);
             this.AttachDelegate("TC_Cut", () => Settings.TC_Cut);
             this.AttachDelegate("TC_Slip", () => Settings.TC_Slip);
             this.AttachDelegate("ABS", () => Settings.ABS);
 
-            // Register Increase/Decrease Actions
             RegisterControlActions("TC_Main", () => Settings.TC_Main, v => Settings.TC_Main = v, Settings.TC_Main_Max);
             RegisterControlActions("TC_Cut", () => Settings.TC_Cut, v => Settings.TC_Cut = v, Settings.TC_Cut_Max);
             RegisterControlActions("TC_Slip", () => Settings.TC_Slip, v => Settings.TC_Slip = v, Settings.TC_Slip_Max);
             RegisterControlActions("ABS", () => Settings.ABS, v => Settings.ABS = v, Settings.ABS_Max);
 
-            // Action for Wheel Button Binding
             this.AddAction("SyncAllFromGame", (a, b) => SyncAllFromLMU());
         }
 
         private void RegisterControlActions(string name, Func<int> getter, Action<int> setter, int maxValue)
         {
             this.AddAction(name + "Increase", (a, b) => {
-                if (getter() < maxValue)
-                {
-                    setter(getter() + 1);
-                    OnPropertyChanged(nameof(Settings));
-                }
+                if (getter() < maxValue) { setter(getter() + 1); OnPropertyChanged(nameof(Settings)); }
             });
-
             this.AddAction(name + "Decrease", (a, b) => {
-                if (getter() > Settings.MinValue)
-                {
-                    setter(getter() - 1);
-                    OnPropertyChanged(nameof(Settings));
-                }
+                if (getter() > Settings.MinValue) { setter(getter() - 1); OnPropertyChanged(nameof(Settings)); }
             });
         }
 
         public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
         {
-            if (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate")
+            if (data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate"))
             {
-                if (data.NewData != null)
-                {
-                    bool shouldSync = false;
+                bool shouldSync = false;
+                if (data.NewData.SessionTypeName != lastSessionType) { lastSessionType = data.NewData.SessionTypeName; shouldSync = true; }
+                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1) { shouldSync = true; }
+                lastLapCount = data.NewData.CurrentLap;
 
-                    // 1. Detect Session Change (e.g. Practice -> Qualifying)
-                    if (data.NewData.SessionTypeName != lastSessionType)
-                    {
-                        lastSessionType = data.NewData.SessionTypeName;
-                        shouldSync = true;
-                    }
-
-                    // 2. Detect Lap Reset (Laps go back to 0 or 1 from a higher number)
-                    if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1)
-                    {
-                        shouldSync = true;
-                    }
-                    lastLapCount = data.NewData.CurrentLap;
-
-                    if (shouldSync) SyncAllFromLMU();
-                }
+                if (shouldSync) SyncAllFromLMU();
             }
         }
 
-        // Inside LMUElectronicBridge.cs
-
         public void SyncAllFromLMU()
         {
-            Settings.TC_Main = GetSafeInt("lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLMAP");
-            Settings.TC_Cut = GetSafeInt("lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLPOWERCUTMAP");
-            Settings.TC_Slip = GetSafeInt("lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLSLIPANGLEMAP");
-            Settings.ABS = GetSafeInt("lmuDataPlugin.Redadeg.lmu.Extended.VM_ANTILOCKBRAKESYSTEMMAP");
-
-            OnPropertyChanged(null);
+            Settings.TC_Main = GetSafeInt(Settings.PropPath_TC_Main);
+            Settings.TC_Cut = GetSafeInt(Settings.PropPath_TC_Cut);
+            Settings.TC_Slip = GetSafeInt(Settings.PropPath_TC_Slip);
+            Settings.ABS = GetSafeInt(Settings.PropPath_ABS);
+            OnPropertyChanged(nameof(Settings));
         }
 
-        // New Method: Apply user-defined values from the UI
         public void ApplyManualValues()
         {
             Settings.TC_Main = Settings.TC_Main_User;
             Settings.TC_Cut = Settings.TC_Cut_User;
             Settings.TC_Slip = Settings.TC_Slip_User;
             Settings.ABS = Settings.ABS_User;
+            OnPropertyChanged(nameof(Settings));
+        }
 
-            OnPropertyChanged(null);
+        public bool TestProperty(string path, out string message)
+        {
+            var val = PluginManager.GetPropertyValue(path);
+            if (val != null) { message = $"Passed. Found value: {val}"; return true; }
+            message = "Failed. Property name not found in SimHub.";
+            return false;
         }
 
         private int GetSafeInt(string prop)
         {
             var val = PluginManager.GetPropertyValue(prop);
-            // Null check: If property doesn't exist or is null, return 0
-            if (val == null) return 0;
-
-            try
-            {
-                return Convert.ToInt32(val);
-            }
-            catch
-            {
-                return 0; // Fallback if data is not a number
-            }
+            return val != null ? Convert.ToInt32(val) : 0;
         }
 
         public void End(PluginManager pluginManager) => this.SaveCommonSettings("ElectronicSettings", Settings);

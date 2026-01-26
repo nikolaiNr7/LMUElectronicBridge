@@ -3,31 +3,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins"
              xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins">
-
     <ScrollViewer Background="#111111">
         <StackPanel Margin="15">
-
-            <styles:SHSection Title="INITIALIZATION MODES" ShowSeparator="True">
+            <styles:SHSection Title="INITIALIZATION" ShowSeparator="True">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" Content="SYNC FROM GAME" Click="SyncAll_Click" Height="40" Background="#00FF00" Foreground="Black" FontWeight="Bold" Margin="0,0,5,0"/>
                         <Button Grid.Column="1" Content="USE MANUAL DEFAULTS" Click="ApplyManual_Click" Height="40" Background="#333333" Foreground="White" Margin="5,0,0,0"/>
                     </Grid>
-
-                    <TextBlock Text="Wheel Mapping for Sync:" Foreground="#888888" FontSize="10" Margin="0,10,0,2"/>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.SyncAllFromGame" FriendlyName="Sync Electronics from Game"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.SyncAllFromGame" FriendlyName="Sync Electronics (Wheel Button Mapping)" Margin="0,10,0,0"/>
                 </StackPanel>
             </styles:SHSection>
 
             <styles:SHSection Title="TRACTION CONTROL (MAIN)" ShowSeparator="True">
                 <StackPanel>
                     <DockPanel LastChildFill="False" Margin="0,0,0,5">
-                        <TextBlock Text="Set Manual Default:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
-                        <TextBox Text="{Binding Settings.TC_Main_User}" Width="50" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
+                        <TextBlock Text="Manual Start Value:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Settings.TC_Main_User}" Width="40" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
                     </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainIncrease" FriendlyName="TC Main +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainDecrease" FriendlyName="TC Main -"/>
@@ -38,8 +34,8 @@
             <styles:SHSection Title="TC POWER CUT" ShowSeparator="True">
                 <StackPanel>
                     <DockPanel LastChildFill="False" Margin="0,0,0,5">
-                        <TextBlock Text="Set Manual Default:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
-                        <TextBox Text="{Binding Settings.TC_Cut_User}" Width="50" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
+                        <TextBlock Text="Manual Start Value:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Settings.TC_Cut_User}" Width="40" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
                     </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutIncrease" FriendlyName="TC Cut +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutDecrease" FriendlyName="TC Cut -"/>
@@ -50,8 +46,8 @@
             <styles:SHSection Title="TC SLIP ANGLE" ShowSeparator="True">
                 <StackPanel>
                     <DockPanel LastChildFill="False" Margin="0,0,0,5">
-                        <TextBlock Text="Set Manual Default:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
-                        <TextBox Text="{Binding Settings.TC_Slip_User}" Width="50" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
+                        <TextBlock Text="Manual Start Value:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Settings.TC_Slip_User}" Width="40" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
                     </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipIncrease" FriendlyName="TC Slip +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipDecrease" FriendlyName="TC Slip -"/>
@@ -62,8 +58,8 @@
             <styles:SHSection Title="ANTI-LOCK BRAKES (ABS)" ShowSeparator="True">
                 <StackPanel>
                     <DockPanel LastChildFill="False" Margin="0,0,0,5">
-                        <TextBlock Text="Set Manual Default:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
-                        <TextBox Text="{Binding Settings.ABS_User}" Width="50" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
+                        <TextBlock Text="Manual Start Value:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Settings.ABS_User}" Width="40" DockPanel.Dock="Right" Background="#222222" Foreground="White" TextAlignment="Center"/>
                     </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSIncrease" FriendlyName="ABS +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSDecrease" FriendlyName="ABS -"/>
@@ -71,6 +67,53 @@
                 </StackPanel>
             </styles:SHSection>
 
+            <styles:SHSection Title="ADVANCED: CUSTOM PROPERTY NAMES" Margin="0,20,0,0">
+                <Expander Header="Edit 3rd Party Property Links" Foreground="White">
+                    <StackPanel Margin="10">
+                        <TextBlock Text="TC Main Property Name:"/>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding Settings.PropPath_TC_Main}" Background="#222222" Foreground="White"/>
+                            <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="TC_Main" Margin="5,0,0,0"/>
+                        </Grid>
+
+                        <TextBlock Text="TC Cut Property Name:"/>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding Settings.PropPath_TC_Cut}" Background="#222222" Foreground="White"/>
+                            <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="TC_Cut" Margin="5,0,0,0"/>
+                        </Grid>
+
+                        <TextBlock Text="TC Slip Property Name:"/>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding Settings.PropPath_TC_Slip}" Background="#222222" Foreground="White"/>
+                            <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="TC_Slip" Margin="5,0,0,0"/>
+                        </Grid>
+
+                        <TextBlock Text="ABS Property Name:"/>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding Settings.PropPath_ABS}" Background="#222222" Foreground="White"/>
+                            <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="ABS" Margin="5,0,0,0"/>
+                        </Grid>
+
+                        <Button Content="RESET TO DEFAULT NAMES" Click="ResetPaths_Click" Background="#442222" Foreground="White" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Expander>
+            </styles:SHSection>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
