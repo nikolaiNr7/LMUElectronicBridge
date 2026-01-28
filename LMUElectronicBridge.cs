@@ -25,6 +25,10 @@ namespace LMUElectronicBridge
 
         public void Init(PluginManager pluginManager)
         {
+
+            // Logge den Versuch
+            SimHub.Logging.Current.Info("ElectronigBridge Initalizing -------------------------------------------------");
+
             PluginManager = pluginManager;
             Settings = this.ReadCommonSettings<ElectronicSettings>("ElectronicSettings", () => new ElectronicSettings());
 
@@ -55,6 +59,10 @@ namespace LMUElectronicBridge
         {
             if (data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate"))
             {
+
+                // Logge den Versuch
+                SimHub.Logging.Current.Info("ElectronigBridge Trying to Update -------------------------------------------------");
+
                 bool sessionTrigger = false;
                 if (data.NewData.SessionTypeName != lastSessionType) { lastSessionType = data.NewData.SessionTypeName; sessionTrigger = true; }
                 if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1) { sessionTrigger = true; }
