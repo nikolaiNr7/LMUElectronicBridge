@@ -15,8 +15,16 @@ namespace LMUElectronicBridge
             DataContext = plugin;
         }
 
-        private void SyncAll_Click(object sender, RoutedEventArgs e) => Plugin.SyncAllFromLMU();
-        private void ApplyManual_Click(object sender, RoutedEventArgs e) => Plugin.ApplyManualValues();
+        private void SyncAll_Click(object sender, RoutedEventArgs e)
+        {
+            // Die Zuweisung zu "_" unterdrückt die Warnung CS4014
+            _ = Plugin.SyncAllFromLMU();
+        }
+
+        private void ApplyManual_Click(object sender, RoutedEventArgs e)
+        {
+            Plugin.ApplyManualValues();
+        }
 
         private void Test_Click(object sender, RoutedEventArgs e)
         {

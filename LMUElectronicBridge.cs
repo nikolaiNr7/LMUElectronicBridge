@@ -2,6 +2,7 @@
 using System;
 using System.Windows.Media;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace LMUElectronicBridge
 {
@@ -11,6 +12,7 @@ namespace LMUElectronicBridge
     {
         public PluginManager PluginManager { get; set; }
         public ElectronicSettings Settings { get; private set; }
+        private LmuApiClient _apiClient = new LmuApiClient();
 
         public ImageSource PictureIcon => null;
         public string LeftMenuTitle => "LMU Electronics Bridge";
@@ -19,7 +21,6 @@ namespace LMUElectronicBridge
         private int lastLapCount = 0;
 
         public event PropertyChangedEventHandler PropertyChanged;
-
         public void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         public void Init(PluginManager pluginManager)
@@ -37,7 +38,7 @@ namespace LMUElectronicBridge
             RegisterControlActions("TC_Slip", () => Settings.TC_Slip, v => Settings.TC_Slip = v, Settings.TC_Slip_Max);
             RegisterControlActions("ABS", () => Settings.ABS, v => Settings.ABS = v, Settings.ABS_Max);
 
-            this.AddAction("SyncAllFromGame", (a, b) => SyncAllFromLMU());
+            this.AddAction("SyncAllFromGame", (a, b) => { _ = SyncAllFromLMU(); });
         }
 
         private void RegisterControlActions(string name, Func<int> getter, Action<int> setter, int maxValue)
@@ -49,29 +50,44 @@ namespace LMUElectronicBridge
                 if (getter() > Settings.MinValue) { setter(getter() - 1); OnPropertyChanged(nameof(Settings)); }
             });
         }
+
         public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
         {
             if (data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate"))
             {
                 bool sessionTrigger = false;
-
-                // Detect Session Change
                 if (data.NewData.SessionTypeName != lastSessionType) { lastSessionType = data.NewData.SessionTypeName; sessionTrigger = true; }
-                // Detect Lap Reset
                 if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1) { sessionTrigger = true; }
                 lastLapCount = data.NewData.CurrentLap;
 
                 if (sessionTrigger)
                 {
-                    if (Settings.UseGameSync)
-                        SyncAllFromLMU();
-                    else
-                        ApplyManualValues();
+                    if (Settings.UseGameSync) _ = SyncAllFromLMU();
+                    else ApplyManualValues();
                 }
             }
         }
 
-        public void SyncAllFromLMU()
+        public async Task SyncAllFromLMU()
+        {
+            var data = await _apiClient.GetElectronicGarageValuesAsync();
+
+            if (data.IsAvailable)
+            {
+                if (data.TC_Main != -1) Settings.TC_Main = data.TC_Main;
+                if (data.TC_Cut != -1) Settings.TC_Cut = data.TC_Cut;
+                if (data.TC_Slip != -1) Settings.TC_Slip = data.TC_Slip;
+                if (data.ABS != -1) Settings.ABS = data.ABS;
+                OnPropertyChanged(nameof(Settings));
+            }
+            else
+            {
+                // Fallback auf Properties, wenn API nicht erreichbar
+                SyncFromPropertiesFallback();
+            }
+        }
+
+        private void SyncFromPropertiesFallback()
         {
             Settings.TC_Main = GetSafeInt(Settings.PropPath_TC_Main);
             Settings.TC_Cut = GetSafeInt(Settings.PropPath_TC_Cut);
