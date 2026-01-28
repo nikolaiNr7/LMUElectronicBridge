@@ -3,19 +3,33 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins"
              xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins">
+
     <ScrollViewer Background="#111111">
         <StackPanel Margin="15">
-            <styles:SHSection Title="INITIALIZATION" ShowSeparator="True">
+
+            <styles:SHSection Title="SESSION INITIALIZATION STRATEGY" ShowSeparator="True">
                 <StackPanel>
+                    <CheckBox Content="Always Sync from Game on Session Start" 
+                              IsChecked="{Binding Settings.UseGameSync}" 
+                              Foreground="White"
+                              FontSize="12"
+                              VerticalContentAlignment="Center"
+                              ToolTip="If checked, values are pulled from LMU/REDADeg. If unchecked, 'Manual Start Values' are used."/>
+
+                    <TextBlock Text="Manual Override Controls:" Margin="0,15,0,5" Foreground="#888888" FontSize="10" FontWeight="Bold"/>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Content="SYNC FROM GAME" Click="SyncAll_Click" Height="40" Background="#00FF00" Foreground="Black" FontWeight="Bold" Margin="0,0,5,0"/>
-                        <Button Grid.Column="1" Content="USE MANUAL DEFAULTS" Click="ApplyManual_Click" Height="40" Background="#333333" Foreground="White" Margin="5,0,0,0"/>
+                        <Button Grid.Column="0" Content="SYNC FROM GAME NOW" Click="SyncAll_Click" 
+                                Height="35" Background="#00FF00" Foreground="Black" FontWeight="Bold" Margin="0,0,5,0"/>
+                        <Button Grid.Column="1" Content="APPLY MANUAL DEFAULTS" Click="ApplyManual_Click" 
+                                Height="35" Background="#333333" Foreground="White" Margin="5,0,0,0"/>
                     </Grid>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.SyncAllFromGame" FriendlyName="Sync Electronics (Wheel Button Mapping)" Margin="0,10,0,0"/>
+
+                    <TextBlock Text="Wheel Mapping for Manual Sync:" Foreground="#888888" FontSize="10" Margin="0,10,0,2"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.SyncAllFromGame" FriendlyName="Global Sync Electronics"/>
                 </StackPanel>
             </styles:SHSection>
 
@@ -27,7 +41,7 @@
                     </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainIncrease" FriendlyName="TC Main +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainDecrease" FriendlyName="TC Main -"/>
-                    <TextBlock Text="{Binding Settings.TC_Main, StringFormat='Active Level: {0}'}" FontSize="16" Foreground="#00FF00" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Settings.TC_Main, StringFormat='Active Level: {0}'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
                 </StackPanel>
             </styles:SHSection>
 
@@ -39,7 +53,7 @@
                     </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutIncrease" FriendlyName="TC Cut +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutDecrease" FriendlyName="TC Cut -"/>
-                    <TextBlock Text="{Binding Settings.TC_Cut, StringFormat='Active Level: {0}'}" FontSize="16" Foreground="#00FF00" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Settings.TC_Cut, StringFormat='Active Level: {0}'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
                 </StackPanel>
             </styles:SHSection>
 
@@ -51,7 +65,7 @@
                     </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipIncrease" FriendlyName="TC Slip +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipDecrease" FriendlyName="TC Slip -"/>
-                    <TextBlock Text="{Binding Settings.TC_Slip, StringFormat='Active Level: {0}'}" FontSize="16" Foreground="#00FF00" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Settings.TC_Slip, StringFormat='Active Level: {0}'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
                 </StackPanel>
             </styles:SHSection>
 
@@ -63,57 +77,64 @@
                     </DockPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSIncrease" FriendlyName="ABS +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSDecrease" FriendlyName="ABS -"/>
-                    <TextBlock Text="{Binding Settings.ABS, StringFormat='Active Level: {0}'}" FontSize="16" Foreground="#00FF00" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Settings.ABS, StringFormat='Active Level: {0}'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
                 </StackPanel>
             </styles:SHSection>
 
             <styles:SHSection Title="ADVANCED: CUSTOM PROPERTY NAMES" Margin="0,20,0,0">
                 <Expander Header="Edit 3rd Party Property Links" Foreground="White">
                     <StackPanel Margin="10">
-                        <TextBlock Text="TC Main Property Name:"/>
-                        <Grid Margin="0,0,0,10">
+                        <Border Background="#332200" Padding="10" CornerRadius="4" Margin="0,0,0,15">
+                            <TextBlock Text="INFO: These property names are used only for the INITIAL LOAD at the start of a session or when 'Sync from Game' is pressed. After the initial set, the plugin tracks adjustments locally." 
+                                       Foreground="#FFCC00" TextWrapping="Wrap" FontSize="11" FontStyle="Italic"/>
+                        </Border>
+
+                        <TextBlock Text="TC Main Property Name:" Foreground="#AAAAAA"/>
+                        <Grid Margin="0,2,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding Settings.PropPath_TC_Main}" Background="#222222" Foreground="White"/>
+                            <TextBox Text="{Binding Settings.PropPath_TC_Main}" Background="#222222" Foreground="White" VerticalContentAlignment="Center"/>
                             <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="TC_Main" Margin="5,0,0,0"/>
                         </Grid>
 
-                        <TextBlock Text="TC Cut Property Name:"/>
-                        <Grid Margin="0,0,0,10">
+                        <TextBlock Text="TC Cut Property Name:" Foreground="#AAAAAA"/>
+                        <Grid Margin="0,2,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding Settings.PropPath_TC_Cut}" Background="#222222" Foreground="White"/>
+                            <TextBox Text="{Binding Settings.PropPath_TC_Cut}" Background="#222222" Foreground="White" VerticalContentAlignment="Center"/>
                             <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="TC_Cut" Margin="5,0,0,0"/>
                         </Grid>
 
-                        <TextBlock Text="TC Slip Property Name:"/>
-                        <Grid Margin="0,0,0,10">
+                        <TextBlock Text="TC Slip Property Name:" Foreground="#AAAAAA"/>
+                        <Grid Margin="0,2,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding Settings.PropPath_TC_Slip}" Background="#222222" Foreground="White"/>
+                            <TextBox Text="{Binding Settings.PropPath_TC_Slip}" Background="#222222" Foreground="White" VerticalContentAlignment="Center"/>
                             <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="TC_Slip" Margin="5,0,0,0"/>
                         </Grid>
 
-                        <TextBlock Text="ABS Property Name:"/>
-                        <Grid Margin="0,0,0,10">
+                        <TextBlock Text="ABS Property Name:" Foreground="#AAAAAA"/>
+                        <Grid Margin="0,2,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding Settings.PropPath_ABS}" Background="#222222" Foreground="White"/>
+                            <TextBox Text="{Binding Settings.PropPath_ABS}" Background="#222222" Foreground="White" VerticalContentAlignment="Center"/>
                             <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="ABS" Margin="5,0,0,0"/>
                         </Grid>
 
-                        <Button Content="RESET TO DEFAULT NAMES" Click="ResetPaths_Click" Background="#442222" Foreground="White" Margin="0,10,0,0"/>
+                        <Button Content="RESET TO DEFAULT NAMES" Click="ResetPaths_Click" 
+                                Background="#442222" Foreground="White" Margin="0,10,0,0" Height="30"/>
                     </StackPanel>
                 </Expander>
             </styles:SHSection>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>

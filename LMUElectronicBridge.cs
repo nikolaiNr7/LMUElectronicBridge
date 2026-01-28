@@ -49,17 +49,25 @@ namespace LMUElectronicBridge
                 if (getter() > Settings.MinValue) { setter(getter() - 1); OnPropertyChanged(nameof(Settings)); }
             });
         }
-
         public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
         {
             if (data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate"))
             {
-                bool shouldSync = false;
-                if (data.NewData.SessionTypeName != lastSessionType) { lastSessionType = data.NewData.SessionTypeName; shouldSync = true; }
-                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1) { shouldSync = true; }
+                bool sessionTrigger = false;
+
+                // Detect Session Change
+                if (data.NewData.SessionTypeName != lastSessionType) { lastSessionType = data.NewData.SessionTypeName; sessionTrigger = true; }
+                // Detect Lap Reset
+                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1) { sessionTrigger = true; }
                 lastLapCount = data.NewData.CurrentLap;
 
-                if (shouldSync) SyncAllFromLMU();
+                if (sessionTrigger)
+                {
+                    if (Settings.UseGameSync)
+                        SyncAllFromLMU();
+                    else
+                        ApplyManualValues();
+                }
             }
         }
 
