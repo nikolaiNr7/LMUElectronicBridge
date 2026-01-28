@@ -2,22 +2,22 @@
 {
     public class ElectronicSettings
     {
-        // Strategie-Toggle
+        // Strategy toggle
         public bool UseGameSync { get; set; } = true;
 
-        // Aktive Laufzeit-Werte
+        // Active runtime values
         public int TC_Main { get; set; } = 0;
         public int TC_Cut { get; set; } = 0;
         public int TC_Slip { get; set; } = 0;
         public int ABS { get; set; } = 0;
 
-        // Manuelle Start-Werte (falls UseGameSync = false)
+        // Manual user values (used if UseGameSync = false)
         public int TC_Main_User { get; set; } = 0;
         public int TC_Cut_User { get; set; } = 0;
         public int TC_Slip_User { get; set; } = 0;
         public int ABS_User { get; set; } = 0;
 
-        // Fallback Property Pfade (falls API offline ist)
+        // Fallback property paths (used if API is offline)
         public string PropPath_TC_Main { get; set; } = "lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLMAP";
         public string PropPath_TC_Cut { get; set; } = "lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLPOWERCUTMAP";
         public string PropPath_TC_Slip { get; set; } = "lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLSLIPANGLEMAP";

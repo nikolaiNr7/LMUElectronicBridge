@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq; // using Newtonsoft.Json for JSON parsing already used in SimHub
+using Newtonsoft.Json.Linq; // Using Newtonsoft.Json for JSON parsing already used in SimHub
 
 namespace LMUElectronicBridge
 {
     /// <summary>
-    /// Container für die aus der API gelesenen Werte.
+    /// Container for the values read from the API.
     /// </summary>
     public class LmuDataModel
     {
@@ -25,7 +25,7 @@ namespace LMUElectronicBridge
 
     public class LmuApiClient
     {
-        // HttpClient als statische Instanz, um Socket-Erschöpfung in .NET 4.8 zu vermeiden
+        // HttpClient as a static instance to avoid socket exhaustion in .NET 4.8
         private static readonly HttpClient _client = new HttpClient { Timeout = TimeSpan.FromMilliseconds(800) };
         private const string BaseUrl = "http://localhost:6397";
 
@@ -33,20 +33,20 @@ namespace LMUElectronicBridge
         {
             try
             {
-                // Abfrage der LMU Garage API
+                // Request data from the LMU Garage API
                 string json = await _client.GetStringAsync(BaseUrl + "/rest/garage/getPlayerGarageData");
 
-                // Parsing mit JObject (Newtonsoft)
+                // Parsing with JObject (Newtonsoft)
                 var root = JObject.Parse(json);
                 var model = new LmuDataModel();
 
-                // Extraktion der Integer-Werte
+                // Extraction of integer values
                 model.ABS = GetValue(root, "VM_ANTILOCKBRAKESYSTEMMAP");
                 model.TC_Main = GetValue(root, "VM_TRACTIONCONTROLMAP");
                 model.TC_Slip = GetValue(root, "VM_TRACTIONCONTROLSLIPANGLEMAP");
                 model.TC_Cut = GetValue(root, "VM_TRACTIONCONTROLPOWERCUTMAP");
 
-                // Extraktion der String-Werte
+                // Extraction of string values
                 model.RegenLevel = GetStringValue(root, "VM_REGEN_LEVEL");
                 model.BrakeMigration = GetStringValue(root, "VM_BRAKE_MIGRATION");
                 model.ElectricMotorMap = GetStringValue(root, "VM_ELECTRIC_MOTOR_MAP");
@@ -57,14 +57,14 @@ namespace LMUElectronicBridge
             }
             catch (Exception)
             {
-                // Falls LMU nicht läuft oder die API nicht antwortet
+                // Return unavailable model if LMU is not running or API does not respond
                 return new LmuDataModel { IsAvailable = false };
             }
         }
 
         /// <summary>
-        /// Liest einen Integer aus dem "value"-Feld eines JSON-Objekts.
-        /// Beispiel-Pfad im JSON: root["VM_TRACTIONCONTROLMAP"]["value"]
+        /// Reads an integer from the "value" field of a JSON object.
+        /// Example path in JSON: root["VM_TRACTIONCONTROLMAP"]["value"]
         /// </summary>
         private int GetValue(JObject root, string key)
         {
@@ -77,7 +77,7 @@ namespace LMUElectronicBridge
         }
 
         /// <summary>
-        /// Liest einen String aus dem "stringValue"-Feld.
+        /// Reads a string from the "stringValue" field.
         /// </summary>
         private string GetStringValue(JObject root, string key)
         {
@@ -85,7 +85,7 @@ namespace LMUElectronicBridge
             if (token != null && token.Type != JTokenType.Null)
             {
                 string val = token.ToString();
-                // LMU sendet oft "N/A" für nicht vorhandene Elektronik (z.B. GT3 ohne RegenLevel)
+                // LMU often sends "N/A" or "N/V" for non-existent electronics (e.g., GT3 without RegenLevel)
                 if (val == "N/A" || val == "N/V") return null;
                 return val;
             }
