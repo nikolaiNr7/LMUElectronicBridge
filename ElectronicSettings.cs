@@ -1,23 +1,48 @@
 ﻿using System;
 
 namespace LMUElectronicBridge
+namespace LMUElectronicBridge
 {
     public class ElectronicSettings
     {
-        // --- ACTIVE RUNTIME VALUES ---
-        // These are the values shown in the UI and updated by buttons/API
+        // --- PERSISTENT VALUES ---
         public int TC_Main { get; set; } = 0;
+        public string TC_Main_Str { get; set; } = "0";
         public int TC_Cut { get; set; } = 0;
+        public string TC_Cut_Str { get; set; } = "0";
         public int TC_Slip { get; set; } = 0;
+        public string TC_Slip_Str { get; set; } = "0";
         public int ABS { get; set; } = 0;
+        public string ABS_Str { get; set; } = "0";
 
-        // --- CALIBRATION LIMITS ---
-        // NOT SAVED: Setter is internal. SimHub ignores these entirely.
-        // They will always reset to these defaults when SimHub starts.
+        // MGU & Engine
+        public int RegenLevel { get; set; } = 0;
+        public string RegenLevel_Str { get; set; } = "0";
+        public int BrakeMigration { get; set; } = 0;
+        public string BrakeMigration_Str { get; set; } = "0";
+        public int ElectricMotorMap { get; set; } = 0;
+        public string ElectricMotorMap_Str { get; set; } = "0";
+        public int EngineMixture { get; set; } = 0;
+        public string EngineMixture_Str { get; set; } = "0";
+
+        // --- LIVE LIMITS (NOT SAVED) ---
         public int TC_Main_Max { get; internal set; } = 11;
+        public int TC_Main_Min { get; internal set; } = 0;
         public int TC_Cut_Max { get; internal set; } = 11;
+        public int TC_Cut_Min { get; internal set; } = 0;
         public int TC_Slip_Max { get; internal set; } = 11;
+        public int TC_Slip_Min { get; internal set; } = 0;
         public int ABS_Max { get; internal set; } = 9;
-        public int MinValue { get; internal set; } = 0;
+        public int ABS_Min { get; internal set; } = 0;
+
+        // Future Proof Limits
+        public int Regen_Max { get; internal set; } = 10;
+        public int Regen_Min { get; internal set; } = 0;
+        public int Migration_Max { get; internal set; } = 100;
+        public int Migration_Min { get; internal set; } = 0;
+        public int MotorMap_Max { get; internal set; } = 2;
+        public int MotorMap_Min { get; internal set; } = 0;
+        public int Mixture_Max { get; internal set; } = 10;
+        public int Mixture_Min { get; internal set; } = 0;
     }
 }
