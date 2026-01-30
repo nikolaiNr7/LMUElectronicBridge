@@ -37,9 +37,9 @@ namespace LMUElectronicBridge
         // Future Proof Limits
         public int Regen_Max { get; internal set; } = 10;
         public int Regen_Min { get; internal set; } = 0;
-        public int Migration_Max { get; internal set; } = 100;
+        public int Migration_Max { get; internal set; } = 5;
         public int Migration_Min { get; internal set; } = 0;
-        public int MotorMap_Max { get; internal set; } = 2;
+        public int MotorMap_Max { get; internal set; } = 5;
         public int MotorMap_Min { get; internal set; } = 0;
         public int Mixture_Max { get; internal set; } = 10;
         public int Mixture_Min { get; internal set; } = 0;

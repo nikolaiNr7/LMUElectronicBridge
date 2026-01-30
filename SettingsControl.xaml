@@ -19,8 +19,11 @@
                 <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainIncrease" FriendlyName="TC Main +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainDecrease" FriendlyName="TC Main -"/>
-                    <TextBlock Text="{Binding Settings.TC_Main_Str, StringFormat='Active: {0}'}" 
-                               FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.TC_Main}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.TC_Main_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
@@ -28,8 +31,11 @@
                 <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutIncrease" FriendlyName="TC Cut +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutDecrease" FriendlyName="TC Cut -"/>
-                    <TextBlock Text="{Binding Settings.TC_Cut_Str, StringFormat='Active: {0}'}" 
-                               FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.TC_Cut}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.TC_Cut_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
@@ -37,8 +43,11 @@
                 <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipIncrease" FriendlyName="TC Slip +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipDecrease" FriendlyName="TC Slip -"/>
-                    <TextBlock Text="{Binding Settings.TC_Slip_Str, StringFormat='Active: {0}'}" 
-                               FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.TC_Slip}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.TC_Slip_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
@@ -46,8 +55,11 @@
                 <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSIncrease" FriendlyName="ABS +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSDecrease" FriendlyName="ABS -"/>
-                    <TextBlock Text="{Binding Settings.ABS_Str, StringFormat='Active: {0}'}" 
-                               FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.ABS}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.ABS_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
@@ -55,8 +67,11 @@
                 <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.RegenIncrease" FriendlyName="Regen +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.RegenDecrease" FriendlyName="Regen -"/>
-                    <TextBlock Text="{Binding Settings.RegenLevel_Str, StringFormat='Active: {0}'}" 
-                               FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.RegenLevel}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.RegenLevel_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
@@ -64,8 +79,11 @@
                 <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.MigrationIncrease" FriendlyName="Migration +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.MigrationDecrease" FriendlyName="Migration -"/>
-                    <TextBlock Text="{Binding Settings.BrakeMigration_Str, StringFormat='Active: {0}'}" 
-                               FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.BrakeMigration}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.BrakeMigration_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
@@ -73,8 +91,11 @@
                 <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.MotorMapIncrease" FriendlyName="Motor Map +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.MotorMapDecrease" FriendlyName="Motor Map -"/>
-                    <TextBlock Text="{Binding Settings.ElectricMotorMap_Str, StringFormat='Active: {0}'}" 
-                               FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.ElectricMotorMap}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.ElectricMotorMap_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
@@ -82,8 +103,11 @@
                 <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.MixtureIncrease" FriendlyName="Engine Mixture +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.MixtureDecrease" FriendlyName="Engine Mixture -"/>
-                    <TextBlock Text="{Binding Settings.EngineMixture_Str, StringFormat='Active: {0}'}" 
-                               FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.EngineMixture}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.EngineMixture_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
