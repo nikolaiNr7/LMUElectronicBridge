@@ -20,7 +20,7 @@ namespace LMUElectronicBridge
 
         private LmuApiClient _apiClient = new LmuApiClient();
 
-        //----- Lookup Tables ------------------------------------------------
+        //----- Lookup Tables for Values to Strings Match ----------------------
         private static readonly Dictionary<string, string[]> Tables = new Dictionary<string, string[]>
         {
             { "BrakeMigration", new[] { "Disabled", "0.5% F", "1.0% F", "1.5% F", "2.0% F", "2.5% F" } },
@@ -30,7 +30,7 @@ namespace LMUElectronicBridge
             { "EngineMixture", new[] { "Safty-Car", "Race" } }
         };
 
-        //----- State Tracking -----------------------------------------------
+        //----- State Tracking for resync get Garage Values ------------------
         private string lastSessionType = "";
         private double lastLapCount = 0;
         private bool _wasInGarageState = false;
@@ -48,6 +48,8 @@ namespace LMUElectronicBridge
         {
             PluginManager = pluginManager;
             Settings = this.ReadCommonSettings<ElectronicSettings>("ElectronicSettings", () => new ElectronicSettings());
+
+            // Automatically register all properties and actions based on ElectronicSettings
             AutoRegister();
 
             // Register the manual sync action
@@ -58,6 +60,11 @@ namespace LMUElectronicBridge
 
         /// <summary>
         /// Method called at every SimHub data refresh.
+        /// // Triggers sync from LMU Garage API based on game state changes.
+        /// State changes monitored:
+        ///     Session Type Change
+        ///     Garage Exit 
+        ///     Lap Reset (Teleport to pits or Restart)
         /// </summary>
         public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
         {
