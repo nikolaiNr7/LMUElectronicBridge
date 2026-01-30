@@ -145,7 +145,6 @@ namespace LMUElectronicBridge
             return table[index];
         }
 
-        public void DataUpdate(PluginManager pm, ref GameReaderCommon.GameData data) { /* Trigger Sync logic here */ }
         public void End(PluginManager pm) => this.SaveCommonSettings("ElectronicSettings", Settings);
         public System.Windows.Controls.Control GetWPFSettingsControl(PluginManager pm) => new SettingsControl(this);
     }
