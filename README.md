@@ -67,3 +67,13 @@ The plugin is designed to be "Smart" but requires specific triggers to match the
 * **Dashboard doesn't match MFD:** You likely used the in-game menu instead of your mapped buttons. Click "Force Sync" or return to the pits to reset.
 
 ---
+
+## ⚖️ License & Terms
+
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**.
+
+**What this means:**
+* ✅ **Share:** You can copy and redistribute the material in any medium or format.
+* ✅ **Adapt:** You can remix, transform, and build upon the material.
+* ⚠️ **Attribution:** You must give appropriate credit and provide a link to the original repository.
+* ❌ **Non-Commercial:** You may **not** use the material for commercial purposes (e.g., selling the DLL, including it in a paid dashboard pack, or charging for support).
