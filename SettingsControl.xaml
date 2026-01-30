@@ -111,6 +111,28 @@
                 </StackPanel>
             </styles:SHSection>
 
+            <styles:SHSection Title="FRONT ANTI-ROLL BAR" ShowSeparator="True">
+                <StackPanel>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.FrontARBIncrease" FriendlyName="Front ARB +"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.FrontARBDecrease" FriendlyName="Front ARB -"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Setting: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.FrontARB_Str}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
+                </StackPanel>
+            </styles:SHSection>
+
+            <styles:SHSection Title="REAR ANTI-ROLL BAR" ShowSeparator="True">
+                <StackPanel>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.RearARBIncrease" FriendlyName="Rear ARB +"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.RearARBDecrease" FriendlyName="Rear ARB -"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Setting: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.RearARB_Str}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
+                </StackPanel>
+            </styles:SHSection>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>
