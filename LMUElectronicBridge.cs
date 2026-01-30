@@ -1,4 +1,10 @@
-﻿using SimHub.Plugins;
+﻿// -------------------------------------------------------------------------
+// LMU Electronic Bridge for SimHub
+// Developed by: [Nikolai Schlott]
+// License: CC BY-NC 4.0 (Attribution-NonCommercial)
+// -------------------------------------------------------------------------
+
+using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
