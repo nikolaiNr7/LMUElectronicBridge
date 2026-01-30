@@ -18,6 +18,7 @@ namespace LMUElectronicBridge
         private static readonly string[] BrakeMigrationTable = { "Disabled", "0.5% F", "1.0% F", "1.5% F", "2.0% F", "2.5% F" };
         private static readonly string[] MotorMapTable = { "Off", "10 kW", "20 kW", "30 kW", "40 kW", "50 kW" };
         private static readonly string[] RegenTable = { "Off", "17 kW", "34 kW", "51 kW", "68 kW", "85 kW", "102 kW", "119 kW", "136 kW", "153 kW", "170 kW" };
+        private static readonly string[] ARBTable = { "Detached", "P1", "P2", "P3", "P4", "P5" };
 
         public ImageSource PictureIcon => null;
         public string LeftMenuTitle => "LMU Electronics Bridge";
@@ -52,14 +53,20 @@ namespace LMUElectronicBridge
             this.AttachDelegate("ABS", () => Settings.ABS);
             this.AttachDelegate("ABS_Str", () => Settings.ABS_Str);
 
-            this.AttachDelegate("RegenLevel", () => Settings.RegenLevel);
-            this.AttachDelegate("RegenLevel_Str", () => Settings.RegenLevel_Str);
             this.AttachDelegate("BrakeMigration", () => Settings.BrakeMigration);
             this.AttachDelegate("BrakeMigration_Str", () => Settings.BrakeMigration_Str);
+
+            this.AttachDelegate("RegenLevel", () => Settings.RegenLevel);
+            this.AttachDelegate("RegenLevel_Str", () => Settings.RegenLevel_Str);
             this.AttachDelegate("ElectricMotorMap", () => Settings.ElectricMotorMap);
             this.AttachDelegate("ElectricMotorMap_Str", () => Settings.ElectricMotorMap_Str);
             this.AttachDelegate("EngineMixture", () => Settings.EngineMixture);
             this.AttachDelegate("EngineMixture_Str", () => Settings.EngineMixture_Str);
+
+            this.AttachDelegate("FrontARB", () => Settings.FrontARB);
+            this.AttachDelegate("FrontARB_Str", () => Settings.FrontARB_Str);
+            this.AttachDelegate("RearARB", () => Settings.RearARB);
+            this.AttachDelegate("RearARB_Str", () => Settings.RearARB_Str);
         }
 
         private void RegisterAllActions()
@@ -83,6 +90,14 @@ namespace LMUElectronicBridge
             }, () => Settings.MotorMap_Min, () => Settings.MotorMap_Max);
 
             RegisterControlActions("Mixture", () => Settings.EngineMixture, v => Settings.EngineMixture = v, () => Settings.Mixture_Min, () => Settings.Mixture_Max);
+
+            RegisterControlActions("FrontARB", () => Settings.FrontARB, v => {
+                Settings.FrontARB = v; Settings.FrontARB_Str = Lookup(ARBTable, v);
+            }, () => Settings.FrontARB_Min, () => Settings.FrontARB_Max);
+
+            RegisterControlActions("RearARB", () => Settings.RearARB, v => {
+                Settings.RearARB = v; Settings.RearARB_Str = Lookup(ARBTable, v);
+            }, () => Settings.RearARB_Min, () => Settings.RearARB_Max);
         }
 
         private string Lookup(string[] table, int index)
@@ -139,6 +154,9 @@ namespace LMUElectronicBridge
                     Map(data.MotorMap_Raw, v => Settings.ElectricMotorMap = v, s => { }, min => Settings.MotorMap_Min = min, max => Settings.MotorMap_Max = max, MotorMapTable);
 
                     Map(data.Mixture_Raw, v => Settings.EngineMixture = v, s => Settings.EngineMixture_Str = s, min => Settings.Mixture_Min = min, max => Settings.Mixture_Max = max);
+
+                    Map(data.FrontARB_Raw, v => Settings.FrontARB = v, s => Settings.FrontARB_Str = s, min => Settings.FrontARB_Min = min, max => Settings.FrontARB_Max = max, ARBTable);
+                    Map(data.RearARB_Raw, v => Settings.RearARB = v, s => Settings.RearARB_Str = s, min => Settings.RearARB_Min = min, max => Settings.RearARB_Max = max, ARBTable);
 
                     OnPropertyChanged(nameof(Settings));
                 }

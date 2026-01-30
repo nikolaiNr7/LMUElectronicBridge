@@ -20,11 +20,15 @@ namespace LMUElectronicBridge
         public GarageValue TC_Slip_Raw { get; set; } = new GarageValue();
         public GarageValue TC_Cut_Raw { get; set; } = new GarageValue();
 
+        public GarageValue BrakeMigration_Raw { get; set; } = new GarageValue();
+
         // MGU & Engine Blocks
         public GarageValue Regen_Raw { get; set; } = new GarageValue();
-        public GarageValue BrakeMigration_Raw { get; set; } = new GarageValue();
         public GarageValue MotorMap_Raw { get; set; } = new GarageValue();
         public GarageValue Mixture_Raw { get; set; } = new GarageValue();
+
+        public GarageValue FrontARB_Raw { get; set; } = new GarageValue();
+        public GarageValue RearARB_Raw { get; set; } = new GarageValue();
 
         public bool IsAvailable { get; set; }
     }
@@ -50,6 +54,8 @@ namespace LMUElectronicBridge
                 model.BrakeMigration_Raw = GetGarageValue(root, "VM_BRAKE_MIGRATION");
                 model.MotorMap_Raw = GetGarageValue(root, "VM_ELECTRIC_MOTOR_MAP");
                 model.Mixture_Raw = GetGarageValue(root, "VM_ENGINE_MIXTURE");
+                model.FrontARB_Raw = GetGarageValue(root, "VM_FRONT_ANTISWAY");
+                model.RearARB_Raw = GetGarageValue(root, "VM_REAR_ANTISWAY");
 
                 return model;
             }
