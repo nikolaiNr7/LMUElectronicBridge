@@ -129,7 +129,7 @@ namespace LMUElectronicBridge
 
                     // Systems with Custom Lookups
                     Map(data.Regen_Raw, v => Settings.RegenLevel = v, s => { }, min => Settings.Regen_Min = min, max => Settings.Regen_Max = max, RegenTable);
-                    Map(data.Migration_Raw, v => Settings.BrakeMigration = v, s => { }, min => Settings.BrakeMigration_Min = min, max => Settings.BrakeMigration_Max = max, BrakeMigrationTable);
+                    Map(data.BrakeMigration_Raw, v => Settings.BrakeMigration = v, s => { }, min => Settings.BrakeMigration_Min = min, max => Settings.BrakeMigration_Max = max, BrakeMigrationTable);
                     Map(data.MotorMap_Raw, v => Settings.ElectricMotorMap = v, s => { }, min => Settings.MotorMap_Min = min, max => Settings.MotorMap_Max = max, MotorMapTable);
 
                     Map(data.Mixture_Raw, v => Settings.EngineMixture = v, s => Settings.EngineMixture_Str = s, min => Settings.Mixture_Min = min, max => Settings.Mixture_Max = max);

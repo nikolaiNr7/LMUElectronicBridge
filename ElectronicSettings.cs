@@ -18,7 +18,7 @@ namespace LMUElectronicBridge
         public int RegenLevel { get; set; } = 0;
         public string RegenLevel_Str { get; set; } = "0";
         public int BrakeMigration { get; set; } = 0;
-        public string BrakeBrakeMigration_Str { get; set; } = "Disabled";
+        public string BrakeMigration_Str { get; set; } = "Disabled";
         public int ElectricMotorMap { get; set; } = 0;
         public string ElectricMotorMap_Str { get; set; } = "0";
         public int EngineMixture { get; set; } = 0;
