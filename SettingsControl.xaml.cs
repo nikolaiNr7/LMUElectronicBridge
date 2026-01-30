@@ -15,8 +15,16 @@ namespace LMUElectronicBridge
             DataContext = plugin;
         }
 
-        private void SyncAll_Click(object sender, RoutedEventArgs e) => Plugin.SyncAllFromLMU();
-        private void ApplyManual_Click(object sender, RoutedEventArgs e) => Plugin.ApplyManualValues();
+        private void SyncAll_Click(object sender, RoutedEventArgs e)
+        {
+            // Assigning to "_" suppresses warning CS4014 (Fire-and-forget async call)
+            _ = Plugin.SyncAllFromLMU();
+        }
+
+        private void ApplyManual_Click(object sender, RoutedEventArgs e)
+        {
+            Plugin.ApplyManualValues();
+        }
 
         private void Test_Click(object sender, RoutedEventArgs e)
         {
@@ -54,6 +62,8 @@ namespace LMUElectronicBridge
                 Plugin.Settings.PropPath_TC_Cut = "lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLPOWERCUTMAP";
                 Plugin.Settings.PropPath_TC_Slip = "lmuDataPlugin.Redadeg.lmu.Extended.VM_TRACTIONCONTROLSLIPANGLEMAP";
                 Plugin.Settings.PropPath_ABS = "lmuDataPlugin.Redadeg.lmu.Extended.VM_ANTILOCKBRAKESYSTEMMAP";
+
+                // Notify the UI that settings have been reset
                 Plugin.OnPropertyChanged(nameof(Plugin.Settings));
             }
         }
