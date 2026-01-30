@@ -5,67 +5,34 @@ using Newtonsoft.Json.Linq;
 
 namespace LMUElectronicBridge
 {
-    public class GarageValue
-    {
-        public int value { get; set; } = -1;
-        public string stringValue { get; set; } = null;
-        public int minValue { get; set; } = 0;
-        public int maxValue { get; set; } = 0;
-    }
-
-    public class LmuDataModel
-    {
-        public GarageValue ABS_Raw { get; set; } = new GarageValue();
-        public GarageValue TC_Main_Raw { get; set; } = new GarageValue();
-        public GarageValue TC_Slip_Raw { get; set; } = new GarageValue();
-        public GarageValue TC_Cut_Raw { get; set; } = new GarageValue();
-
-        public GarageValue BrakeMigration_Raw { get; set; } = new GarageValue();
-
-        // MGU & Engine Blocks
-        public GarageValue Regen_Raw { get; set; } = new GarageValue();
-        public GarageValue MotorMap_Raw { get; set; } = new GarageValue();
-        public GarageValue Mixture_Raw { get; set; } = new GarageValue();
-
-        public GarageValue FrontARB_Raw { get; set; } = new GarageValue();
-        public GarageValue RearARB_Raw { get; set; } = new GarageValue();
-
-        public bool IsAvailable { get; set; }
-    }
-
+    /// <summary>
+    /// Handles HTTP communication with the Le Mans Ultimate REST API.
+    /// </summary>
     public class LmuApiClient
     {
-        private static readonly HttpClient _client = new HttpClient { Timeout = TimeSpan.FromMilliseconds(1500) };
+        //----- Properties & Members -----------------------------------------
+        private static readonly HttpClient _client = new HttpClient { Timeout = TimeSpan.FromMilliseconds(2000) };
         private const string BaseUrl = "http://localhost:6397";
 
-        public async Task<LmuDataModel> GetElectronicGarageValuesAsync()
+        //----- API Methods --------------------------------------------------
+        /// <summary>
+        /// Fetches the full garage JSON from LMU.
+        /// </summary>
+        /// <returns>A JObject containing the garage data, or null if the request fails.</returns>
+        public async Task<JObject> GetRawGarageDataAsync()
         {
             try
             {
+                // Requesting player garage data from the local LMU web server
                 string json = await _client.GetStringAsync(BaseUrl + "/rest/garage/getPlayerGarageData");
-                var root = JObject.Parse(json);
-                var model = new LmuDataModel { IsAvailable = true };
-
-                model.ABS_Raw = GetGarageValue(root, "VM_ANTILOCKBRAKESYSTEMMAP");
-                model.TC_Main_Raw = GetGarageValue(root, "VM_TRACTIONCONTROLMAP");
-                model.TC_Slip_Raw = GetGarageValue(root, "VM_TRACTIONCONTROLSLIPANGLEMAP");
-                model.TC_Cut_Raw = GetGarageValue(root, "VM_TRACTIONCONTROLPOWERCUTMAP");
-                model.Regen_Raw = GetGarageValue(root, "VM_REGEN_LEVEL");
-                model.BrakeMigration_Raw = GetGarageValue(root, "VM_BRAKE_MIGRATION");
-                model.MotorMap_Raw = GetGarageValue(root, "VM_ELECTRIC_MOTOR_MAP");
-                model.Mixture_Raw = GetGarageValue(root, "VM_ENGINE_MIXTURE");
-                model.FrontARB_Raw = GetGarageValue(root, "VM_FRONT_ANTISWAY");
-                model.RearARB_Raw = GetGarageValue(root, "VM_REAR_ANTISWAY");
-
-                return model;
+                return JObject.Parse(json);
             }
-            catch { return new LmuDataModel { IsAvailable = false }; }
-        }
-
-        private GarageValue GetGarageValue(JObject root, string key)
-        {
-            var token = root.SelectToken(key);
-            return (token != null && token.HasValues) ? token.ToObject<GarageValue>() : new GarageValue();
+            catch (Exception ex)
+            {
+                // Logging error to SimHub's internal logger for troubleshooting
+                SimHub.Logging.Current.Error($"LMU API Connection Failed: {ex.Message}");
+                return null;
+            }
         }
     }
 }
