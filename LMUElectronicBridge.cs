@@ -58,15 +58,28 @@ namespace LMUElectronicBridge
         }
 
         /// <summary>
-        /// Registers Increase/Decrease actions that can be mapped to hardware buttons.
+        /// Registers Increase/Decrease actions. 
+        /// Using a "Look-Ahead" check to ensure we never even attempt to set 12.
         /// </summary>
         private void RegisterControlActions(string name, Func<int> getter, Action<int> setter, int maxValue)
         {
             this.AddAction(name + "Increase", (a, b) => {
-                if (getter() < maxValue) { setter(getter() + 1); OnPropertyChanged(nameof(Settings)); }
+                // Look-ahead: Only allow the increase if the NEW value would be <= maxValue
+                int currentValue = getter();
+                if (currentValue + 1 <= maxValue)
+                {
+                    setter(currentValue + 1);
+                    OnPropertyChanged(nameof(Settings));
+                }
             });
+
             this.AddAction(name + "Decrease", (a, b) => {
-                if (getter() > Settings.MinValue) { setter(getter() - 1); OnPropertyChanged(nameof(Settings)); }
+                int currentValue = getter();
+                if (currentValue - 1 >= Settings.MinValue)
+                {
+                    setter(currentValue - 1);
+                    OnPropertyChanged(nameof(Settings));
+                }
             });
         }
 
