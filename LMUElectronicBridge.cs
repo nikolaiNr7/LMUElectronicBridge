@@ -30,6 +30,7 @@ namespace LMUElectronicBridge
         private string lastSessionType = "";
         private double lastLapCount = 0;
         private bool _wasInGarageState = false;
+        private bool _firstLoadSyncDone = false;
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -45,40 +46,42 @@ namespace LMUElectronicBridge
 
         public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
         {
-            // Ensure we have data and are running the correct game
-            if (data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate"))
+            // 1. Basic Check: Is the game running?
+            bool isLmu = data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate");
+
+            if (isLmu)
             {
+                // FORCE SYNC ON FIRST LOAD
+                // This covers the "SimHub started late" scenario
+                if (!_firstLoadSyncDone)
+                {
+                    _firstLoadSyncDone = true;
+                    SimHub.Logging.Current.Info("LMU Bridge: Initial sync on plugin load.");
+                    _ = SyncAllFromLMU();
+                }
+
                 bool triggerSync = false;
 
-                // Trigger: Session Change (e.g., Practice to Qualifying)
+                // --- Your existing triggers ---
                 if (data.NewData.SessionTypeName != lastSessionType)
                 {
                     lastSessionType = data.NewData.SessionTypeName;
                     triggerSync = true;
                 }
 
-                // Trigger: Lap Reset (detected when current lap is lower than previous, usually on "Return to Garage")
-                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1)
-                {
-                    triggerSync = true;
-                }
+                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1) triggerSync = true;
                 lastLapCount = data.NewData.CurrentLap;
 
-                // Trigger: Garage Exit (Transition from Ignition OFF to Ignition ON while in pits)
-                // This is the most reliable way to catch changes made in the setup menu.
                 bool currentGarageState = (data.NewData.IsInPit == 1 && data.NewData.EngineIgnitionOn == 0);
-
-                if (_wasInGarageState && data.NewData.EngineIgnitionOn == 1)
-                {
-                    triggerSync = true;
-                }
+                if (_wasInGarageState && data.NewData.EngineIgnitionOn == 1) triggerSync = true;
                 _wasInGarageState = currentGarageState;
 
-                // Fire the async background sync if any trigger was hit
-                if (triggerSync)
-                {
-                    _ = SyncAllFromLMU();
-                }
+                if (triggerSync) _ = SyncAllFromLMU();
+            }
+            else
+            {
+                // Reset the flag if the game is closed, so it's ready for the next launch
+                _firstLoadSyncDone = false;
             }
         }
 
