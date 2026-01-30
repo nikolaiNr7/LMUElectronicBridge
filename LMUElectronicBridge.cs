@@ -8,7 +8,7 @@ namespace LMUElectronicBridge
 {
     [PluginName("LMU Electronic Bridge")]
     [PluginAuthor("Nikolai Schlott")]
-    public class LMUElectronicBridge : IPlugin, IWPFSettingsV2, INotifyPropertyChanged
+    public class LMUElectronicBridge : IPlugin, IDataPlugin, IWPFSettingsV2, INotifyPropertyChanged
     {
         public PluginManager PluginManager { get; set; }
         public ElectronicSettings Settings { get; private set; }
@@ -17,8 +17,13 @@ namespace LMUElectronicBridge
         public ImageSource PictureIcon => null;
         public string LeftMenuTitle => "LMU Electronics Bridge";
 
+
+        // Flags to avoid redundant syncs
+        private bool _wasInGarageState = false;
+        private int _lastIgnitionState = -1;
         private string lastSessionType = null;
         private int lastLapCount = 0;
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -34,7 +39,7 @@ namespace LMUElectronicBridge
         /// <param name="pluginManager">The SimHub PluginManager instance.</param>
         public void Init(PluginManager pluginManager)
         {
-            SimHub.Logging.Current.Info("ElectronicBridge Initializing -------------------------------------------------");
+            SimHub.Logging.Current.Info("Starting Plugin LMUElectronitBridge");
 
             PluginManager = pluginManager;
             Settings = this.ReadCommonSettings<ElectronicSettings>("ElectronicSettings", () => new ElectronicSettings());
@@ -72,28 +77,66 @@ namespace LMUElectronicBridge
             });
         }
 
+
         /// <summary>
-        /// Called during the SimHub game loop. Handles automatic synchronization on session or lap changes.
+        /// Called during the SimHub game loop. Monitors for session resets or garage-to-track transitions.
+        /// Retrieves electronic settings from LMU or applies manual values based on user preference.
+        /// Requests a sync when:
+        ///     New Session
+        ///     Laps Reset to 0
+        ///     Car was in Garage (Pit + Engine Off) and now Engine is On
         /// </summary>
-        /// <param name="pluginManager">The SimHub PluginManager instance.</param>
-        /// <param name="data">The current game telemetry data.</param>
         public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
         {
+            // Ensure we only process data for Le Mans Ultimate
             if (data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate"))
             {
-                bool sessionTrigger = false;
+                bool triggerSync = false;
 
-                // Trigger sync if the session type (Practice/Qualy/Race) changes
-                if (data.NewData.SessionTypeName != lastSessionType) { lastSessionType = data.NewData.SessionTypeName; sessionTrigger = true; }
+                // --- 1. Debug Telemetry Monitoring ---
+                // Log whenever ignition toggles to see the IsInPit status in the log file
+                if (data.NewData.EngineIgnitionOn != _lastIgnitionState)
+                {
+                    _lastIgnitionState = data.NewData.EngineIgnitionOn;
+                }
 
-                // Trigger sync if the lap resets (lap 0 or 1 usually indicates a fresh start)
-                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1) { sessionTrigger = true; }
+                // --- 2. Session/Lap Detection ---
+                if (data.NewData.SessionTypeName != lastSessionType)
+                {
+                    lastSessionType = data.NewData.SessionTypeName;
+                    triggerSync = true;
+                }
+
+                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1)
+                {
+                    triggerSync = true;
+                }
                 lastLapCount = data.NewData.CurrentLap;
 
-                if (sessionTrigger)
+                // --- 3. Garage Logic (Transition from Pit+Off to On) ---
+                // Definition: Garage state is strictly "In Pits" AND "Engine Off"
+                bool currentGarageState = (data.NewData.IsInPit == 1 && data.NewData.EngineIgnitionOn == 0);
+
+                // TRIGGER: If we were in garage state and just turned the engine ON
+                if (_wasInGarageState && data.NewData.EngineIgnitionOn == 1)
                 {
-                    if (Settings.UseGameSync) _ = SyncAllFromLMU();
-                    else ApplyManualValues();
+                    triggerSync = true;
+                }
+
+                // Update the state tracker for the next frame
+                _wasInGarageState = currentGarageState;
+
+                // --- 4. Execution ---
+                if (triggerSync)
+                {
+                    if (Settings.UseGameSync)
+                    {
+                        _ = SyncAllFromLMU();
+                    }
+                    else
+                    {
+                        ApplyManualValues();
+                    }
                 }
             }
         }
