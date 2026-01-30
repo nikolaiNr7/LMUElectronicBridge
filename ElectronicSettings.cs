@@ -57,10 +57,10 @@ namespace LMUElectronicBridge
         public int MotorMap_Max { get; internal set; } = 5;
         public int MotorMap_Min { get; internal set; } = 0;
 
-        [LmuProperty("VM_MIXTURE_MAP")]
+        [LmuProperty("VM_ENGINE_MIXTURE", "EngineMixture")]
         public int Mixture { get; set; }
         public string Mixture_Str { get; set; }
-        public int Mixture_Max { get; internal set; } = 5;
+        public int Mixture_Max { get; internal set; } = 2;
         public int Mixture_Min { get; internal set; } = 0;
 
         [LmuProperty("VM_FRONT_ANTISWAY", "ARB")]

@@ -14,7 +14,7 @@ namespace LMUElectronicBridge
     {
         public PluginManager PluginManager { get; set; }
         public ImageSource PictureIcon => null;
-        public string LeftMenuTitle => "LMU Electronics";
+        public string LeftMenuTitle => "LMU Electronics Bridge";
         public ElectronicSettings Settings { get; private set; }
         private LmuApiClient _apiClient = new LmuApiClient();
 
@@ -23,7 +23,8 @@ namespace LMUElectronicBridge
             { "BrakeMigration", new[] { "Disabled", "0.5% F", "1.0% F", "1.5% F", "2.0% F", "2.5% F" } },
             { "MotorMap", new[] { "Off", "10 kW", "20 kW", "30 kW", "40 kW", "50 kW" } },
             { "Regen", new[] { "Off", "17 kW", "34 kW", "51 kW", "68 kW", "85 kW", "102 kW", "119 kW", "136 kW", "153 kW", "170 kW" } },
-            { "ARB", new[] { "Detached", "P1", "P2", "P3", "P4", "P5" } }
+            { "ARB", new[] { "Detached", "P1", "P2", "P3", "P4", "P5" } },
+            {"EngineMixture", new[] {"Safty-Car", "Race" } }
         };
 
         private string lastSessionType = "";
