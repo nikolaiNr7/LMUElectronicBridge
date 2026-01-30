@@ -18,7 +18,7 @@ namespace LMUElectronicBridge
         public int RegenLevel { get; set; } = 0;
         public string RegenLevel_Str { get; set; } = "0";
         public int BrakeMigration { get; set; } = 0;
-        public string BrakeMigration_Str { get; set; } = "0";
+        public string BrakeBrakeMigration_Str { get; set; } = "Disabled";
         public int ElectricMotorMap { get; set; } = 0;
         public string ElectricMotorMap_Str { get; set; } = "0";
         public int EngineMixture { get; set; } = 0;
@@ -37,8 +37,8 @@ namespace LMUElectronicBridge
         // Future Proof Limits
         public int Regen_Max { get; internal set; } = 10;
         public int Regen_Min { get; internal set; } = 0;
-        public int Migration_Max { get; internal set; } = 5;
-        public int Migration_Min { get; internal set; } = 0;
+        public int BrakeMigration_Max { get; internal set; } = 5;
+        public int BrakeMigration_Min { get; internal set; } = 0;
         public int MotorMap_Max { get; internal set; } = 5;
         public int MotorMap_Min { get; internal set; } = 0;
         public int Mixture_Max { get; internal set; } = 10;

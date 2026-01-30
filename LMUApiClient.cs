@@ -22,7 +22,7 @@ namespace LMUElectronicBridge
 
         // MGU & Engine Blocks
         public GarageValue Regen_Raw { get; set; } = new GarageValue();
-        public GarageValue Migration_Raw { get; set; } = new GarageValue();
+        public GarageValue BrakeMigration_Raw { get; set; } = new GarageValue();
         public GarageValue MotorMap_Raw { get; set; } = new GarageValue();
         public GarageValue Mixture_Raw { get; set; } = new GarageValue();
 
@@ -47,7 +47,7 @@ namespace LMUElectronicBridge
                 model.TC_Slip_Raw = GetGarageValue(root, "VM_TRACTIONCONTROLSLIPANGLEMAP");
                 model.TC_Cut_Raw = GetGarageValue(root, "VM_TRACTIONCONTROLPOWERCUTMAP");
                 model.Regen_Raw = GetGarageValue(root, "VM_REGEN_LEVEL");
-                model.Migration_Raw = GetGarageValue(root, "VM_BRAKE_MIGRATION");
+                model.BrakeMigration_Raw = GetGarageValue(root, "VM_BRAKE_MIGRATION");
                 model.MotorMap_Raw = GetGarageValue(root, "VM_ELECTRIC_MOTOR_MAP");
                 model.Mixture_Raw = GetGarageValue(root, "VM_ENGINE_MIXTURE");
 
