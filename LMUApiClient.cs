@@ -5,67 +5,48 @@ using Newtonsoft.Json.Linq;
 
 namespace LMUElectronicBridge
 {
-    public class GarageValue
-    {
-        public int value { get; set; } = -1;
-        public string stringValue { get; set; } = null;
-        public int minValue { get; set; } = 0;
-        public int maxValue { get; set; } = 0;
-    }
-
-    public class LmuDataModel
-    {
-        public GarageValue ABS_Raw { get; set; } = new GarageValue();
-        public GarageValue TC_Main_Raw { get; set; } = new GarageValue();
-        public GarageValue TC_Slip_Raw { get; set; } = new GarageValue();
-        public GarageValue TC_Cut_Raw { get; set; } = new GarageValue();
-
-        public GarageValue BrakeMigration_Raw { get; set; } = new GarageValue();
-
-        // MGU & Engine Blocks
-        public GarageValue Regen_Raw { get; set; } = new GarageValue();
-        public GarageValue MotorMap_Raw { get; set; } = new GarageValue();
-        public GarageValue Mixture_Raw { get; set; } = new GarageValue();
-
-        public GarageValue FrontARB_Raw { get; set; } = new GarageValue();
-        public GarageValue RearARB_Raw { get; set; } = new GarageValue();
-
-        public bool IsAvailable { get; set; }
-    }
-
     public class LmuApiClient
     {
-        private static readonly HttpClient _client = new HttpClient { Timeout = TimeSpan.FromMilliseconds(1500) };
+        private static readonly HttpClient _client = new HttpClient { Timeout = TimeSpan.FromMilliseconds(2000) };
         private const string BaseUrl = "http://localhost:6397";
 
-        public async Task<LmuDataModel> GetElectronicGarageValuesAsync()
+        /// <summary>
+        /// Fetches the full garage JSON from LMU.
+        /// Returns null if the request failed or response cannot be parsed.
+        /// </summary>
+        public async Task<JObject> GetRawGarageDataAsync(System.Threading.CancellationToken cancellationToken = default)
         {
+            var uri = new Uri(BaseUrl + "/rest/garage/getPlayerGarageData");
             try
             {
-                string json = await _client.GetStringAsync(BaseUrl + "/rest/garage/getPlayerGarageData");
-                var root = JObject.Parse(json);
-                var model = new LmuDataModel { IsAvailable = true };
+                using (var resp = await _client.GetAsync(uri, cancellationToken).ConfigureAwait(false))
+                {
+                    if (!resp.IsSuccessStatusCode)
+                    {
+                        SimHub.Logging.Current.Warn($"LMU API returned non-success status: {resp.StatusCode}");
+                        return null;
+                    }
 
-                model.ABS_Raw = GetGarageValue(root, "VM_ANTILOCKBRAKESYSTEMMAP");
-                model.TC_Main_Raw = GetGarageValue(root, "VM_TRACTIONCONTROLMAP");
-                model.TC_Slip_Raw = GetGarageValue(root, "VM_TRACTIONCONTROLSLIPANGLEMAP");
-                model.TC_Cut_Raw = GetGarageValue(root, "VM_TRACTIONCONTROLPOWERCUTMAP");
-                model.Regen_Raw = GetGarageValue(root, "VM_REGEN_LEVEL");
-                model.BrakeMigration_Raw = GetGarageValue(root, "VM_BRAKE_MIGRATION");
-                model.MotorMap_Raw = GetGarageValue(root, "VM_ELECTRIC_MOTOR_MAP");
-                model.Mixture_Raw = GetGarageValue(root, "VM_ENGINE_MIXTURE");
-                model.FrontARB_Raw = GetGarageValue(root, "VM_FRONT_ANTISWAY");
-                model.RearARB_Raw = GetGarageValue(root, "VM_REAR_ANTISWAY");
-
-                return model;
+                    var json = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    if (string.IsNullOrWhiteSpace(json)) return null;
+                    return JObject.Parse(json);
+                }
             }
-            catch { return new LmuDataModel { IsAvailable = false }; }
-        }
-
-        private GarageValue GetGarageValue(JObject root, string key)
-        {
-            var token = root.SelectToken(key);
-            return (token != null && token.HasValues) ? token.ToObject<GarageValue>() : new GarageValue();
+            catch (TaskCanceledException tex) when (!cancellationToken.IsCancellationRequested)
+            {
+                SimHub.Logging.Current.Warn($"LMU API request timed out: {tex.Message}");
+                return null;
+            }
+            catch (HttpRequestException hex)
+            {
+                SimHub.Logging.Current.Error($"LMU API HTTP error: {hex.Message}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                SimHub.Logging.Current.Error($"LMU API Connection Failed: {ex.Message}");
+                return null;
+            }
         }
     }
 }

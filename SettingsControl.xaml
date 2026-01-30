@@ -12,6 +12,8 @@
                     <Button Content="FORCE SYNC FROM GARAGE" Click="SyncAll_Click" 
                             Height="35" Background="#00FF00" Foreground="Black" FontWeight="Bold" Margin="0,0,0,10"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.SyncFromGame" FriendlyName="Button to Force Sync from Garage"/>
+                    <TextBlock Text="Note: Automatic sync occurs on session changes and pit exits." 
+                               Foreground="Gray" FontSize="11" FontStyle="Italic" Margin="0,5,0,0"/>
                 </StackPanel>
             </styles:SHSection>
 
@@ -63,18 +65,6 @@
                 </StackPanel>
             </styles:SHSection>
 
-            <styles:SHSection Title="REGEN LEVEL" ShowSeparator="True">
-                <StackPanel>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.RegenIncrease" FriendlyName="Regen +"/>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.RegenDecrease" FriendlyName="Regen -"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
-                        <TextBlock Text="{Binding Settings.RegenLevel}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.RegenLevel_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                    </StackPanel>
-                </StackPanel>
-            </styles:SHSection>
-            
             <styles:SHSection Title="BRAKE MIGRATION" ShowSeparator="True">
                 <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.BrakeMigrationIncrease" FriendlyName="Brake Migration +"/>
@@ -87,14 +77,26 @@
                 </StackPanel>
             </styles:SHSection>
 
+            <styles:SHSection Title="REGEN LEVEL" ShowSeparator="True">
+                <StackPanel>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.RegenIncrease" FriendlyName="Regen +"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.RegenDecrease" FriendlyName="Regen -"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Settings.Regen}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.Regen_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    </StackPanel>
+                </StackPanel>
+            </styles:SHSection>
+
             <styles:SHSection Title="ELECTRIC MOTOR MAP" ShowSeparator="True">
                 <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.MotorMapIncrease" FriendlyName="Motor Map +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.MotorMapDecrease" FriendlyName="Motor Map -"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
-                        <TextBlock Text="{Binding Settings.ElectricMotorMap}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.ElectricMotorMap_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.MotorMap}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.MotorMap_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
             </styles:SHSection>
@@ -105,8 +107,8 @@
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.MixtureDecrease" FriendlyName="Engine Mixture -"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
-                        <TextBlock Text="{Binding Settings.EngineMixture}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.EngineMixture_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.Mixture}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.Mixture_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
             </styles:SHSection>
