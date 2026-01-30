@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace LMUElectronicBridge
 {
@@ -17,13 +16,7 @@ namespace LMUElectronicBridge
 
         private void SyncAll_Click(object sender, RoutedEventArgs e)
         {
-            // Assigning to "_" suppresses warning CS4014 (Fire-and-forget async call)
             _ = Plugin.SyncAllFromLMU();
-        }
-
-        private void ApplyManual_Click(object sender, RoutedEventArgs e)
-        {
-            Plugin.ApplyManualValues();
         }
     }
 }
