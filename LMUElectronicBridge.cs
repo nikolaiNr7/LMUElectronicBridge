@@ -17,7 +17,6 @@ namespace LMUElectronicBridge
         public string LeftMenuTitle => "LMU Electronics";
         public ElectronicSettings Settings { get; private set; }
         private LmuApiClient _apiClient = new LmuApiClient();
-        private readonly List<Tuple<PropertyInfo, LmuPropertyAttribute>> _registeredProps = new List<Tuple<PropertyInfo, LmuPropertyAttribute>>();
 
         private static readonly Dictionary<string, string[]> Tables = new Dictionary<string, string[]>
         {
@@ -26,6 +25,10 @@ namespace LMUElectronicBridge
             { "Regen", new[] { "Off", "17 kW", "34 kW", "51 kW", "68 kW", "85 kW", "102 kW", "119 kW", "136 kW", "153 kW", "170 kW" } },
             { "ARB", new[] { "Detached", "P1", "P2", "P3", "P4", "P5" } }
         };
+
+        private string lastSessionType = "";
+        private double lastLapCount = 0;
+        private bool _wasInGarageState = false;
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -38,15 +41,53 @@ namespace LMUElectronicBridge
             this.AddAction("SyncFromGame", (a, b) => { _ = SyncAllFromLMU(); });
         }
 
+
+        public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
+        {
+            // Ensure we have data and are running the correct game
+            if (data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate"))
+            {
+                bool triggerSync = false;
+
+                // Trigger: Session Change (e.g., Practice to Qualifying)
+                if (data.NewData.SessionTypeName != lastSessionType)
+                {
+                    lastSessionType = data.NewData.SessionTypeName;
+                    triggerSync = true;
+                }
+
+                // Trigger: Lap Reset (detected when current lap is lower than previous, usually on "Return to Garage")
+                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1)
+                {
+                    triggerSync = true;
+                }
+                lastLapCount = data.NewData.CurrentLap;
+
+                // Trigger: Garage Exit (Transition from Ignition OFF to Ignition ON while in pits)
+                // This is the most reliable way to catch changes made in the setup menu.
+                bool currentGarageState = (data.NewData.IsInPit == 1 && data.NewData.EngineIgnitionOn == 0);
+
+                if (_wasInGarageState && data.NewData.EngineIgnitionOn == 1)
+                {
+                    triggerSync = true;
+                }
+                _wasInGarageState = currentGarageState;
+
+                // Fire the async background sync if any trigger was hit
+                if (triggerSync)
+                {
+                    _ = SyncAllFromLMU();
+                }
+            }
+        }
+
         private void AutoRegister()
         {
-            // Cache property infos and attributes to avoid repeated reflection calls at runtime
             foreach (var prop in typeof(ElectronicSettings).GetProperties())
             {
                 var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();
                 if (attr == null) continue;
                 string name = prop.Name;
-                _registeredProps.Add(Tuple.Create(prop, attr));
                 this.AttachDelegate(name, () => prop.GetValue(Settings));
                 this.AttachDelegate(name + "_Str", () => typeof(ElectronicSettings).GetProperty(name + "_Str")?.GetValue(Settings));
                 this.AddAction(name + "Increase", (a, b) => ChangeValue(prop, 1, attr.TableName));
@@ -78,26 +119,22 @@ namespace LMUElectronicBridge
         {
             JObject json = await _apiClient.GetRawGarageDataAsync();
             if (json == null) return;
-            foreach (var tuple in _registeredProps)
+            foreach (var prop in typeof(ElectronicSettings).GetProperties())
             {
-                var prop = tuple.Item1;
-                var attr = tuple.Item2;
+                var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();
+                if (attr == null) continue;
                 var token = json.SelectToken(attr.JsonKey);
-                if (token == null || !token.HasValues) continue;
-                int val;
-                int min;
-                int max;
-                // safe conversions with fallbacks
-                if (!int.TryParse(token["value"]?.ToString(), out val)) continue;
-                if (!int.TryParse(token["minValue"]?.ToString(), out min)) min = 0;
-                if (!int.TryParse(token["maxValue"]?.ToString(), out max)) max = val + 1;
-                max = Math.Max(min, max - 1);
-                prop.SetValue(Settings, val);
-                typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.SetValue(Settings, max);
-                typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.SetValue(Settings, min);
-                UpdateStringProp(prop.Name, val, attr.TableName);
+                if (token != null && token.HasValues)
+                {
+                    int val = Convert.ToInt32(token["value"]);
+                    int min = Convert.ToInt32(token["minValue"]);
+                    int max = Convert.ToInt32(token["maxValue"]) - 1;
+                    prop.SetValue(Settings, val);
+                    typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.SetValue(Settings, max);
+                    typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.SetValue(Settings, min);
+                    UpdateStringProp(prop.Name, val, attr.TableName);
+                }
             }
-            // ElectronicSettings will notify property changes for individual props; notify that Settings collection state may have changed too
             OnPropertyChanged(nameof(Settings));
         }
 

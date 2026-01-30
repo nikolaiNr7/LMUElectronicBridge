@@ -14,18 +14,9 @@ namespace LMUElectronicBridge
             DataContext = plugin;
         }
 
-        private async void SyncAll_Click(object sender, RoutedEventArgs e)
+        private void SyncAll_Click(object sender, RoutedEventArgs e)
         {
-            var btn = sender as Button;
-            try
-            {
-                if (btn != null) btn.IsEnabled = false;
-                await Plugin.SyncAllFromLMU().ConfigureAwait(true);
-            }
-            finally
-            {
-                if (btn != null) btn.IsEnabled = true;
-            }
+            _ = Plugin.SyncAllFromLMU();
         }
     }
 }
