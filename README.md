@@ -6,13 +6,12 @@ Le Mans Ultimate does not "live broadcast" changes made to electronics via exter
 
 ---
 
-## 🛠 Installation
-1.  **Locate SimHub Folder:** Usually `C:\Program Files (x86)\SimHub`.
-2.  **Copy Files:**
-   * Place `LMUElectronicBridge.dll` into the SimHub root folder.
-   * Note: 3. Party Depenceny - should alrady be in your SimhubFolder Place `Newtonsoft.Json.dll` into the SimHub root folder.
-3.  **Enable Plugin:** Start SimHub. When prompted to enable "LMUElectronicBridge," click **Yes**.
-
+## 💾 Installation
+1. Go to the [Releases](https://github.com/nikolaiNr7/LMUElectronicBridge/releases/tag/v1.0.0) page.
+2. Download the latest `LMUElectronicBridge.dll`.
+3. Right-click the DLL -> **Properties** -> Check **"Unblock"** (Windows security).
+4. Copy the DLL into your SimHub installation folder (usually `C:\Program Files (x86)\SimHub`).
+5. Restart SimHub and enable the plugin in the settings.
 ---
 
 ## 🎮 How to Use: Button Mapping
