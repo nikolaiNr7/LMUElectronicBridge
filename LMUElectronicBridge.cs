@@ -1,5 +1,4 @@
-﻿using LMUElectronicBridge.LMUElectronicBridge;
-using SimHub.Plugins;
+﻿using SimHub.Plugins;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;

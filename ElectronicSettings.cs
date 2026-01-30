@@ -1,7 +1,6 @@
 ﻿using System;
 
 namespace LMUElectronicBridge
-namespace LMUElectronicBridge
 {
     public class ElectronicSettings
     {
