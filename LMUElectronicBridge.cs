@@ -175,6 +175,7 @@ namespace LMUElectronicBridge
                 // Optional: Revert to Manual Values as a safe fallback on error
                 // ApplyManualValues();
             }
+        }
 
 
         /// <summary>
