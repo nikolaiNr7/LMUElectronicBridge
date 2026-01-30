@@ -118,7 +118,8 @@ namespace LMUElectronicBridge
                             minSet(raw.minValue);
                             maxSet(raw.maxValue - lmuMaxValueOffset);
                             valSet(raw.value);
-                            strSet(customTable != null ? Lookup(customTable, raw.value) : raw.stringValue);
+                            // If table exists use it, otherwise strictly default to value string
+                            strSet(customTable != null ? Lookup(customTable, raw.value) : raw.value.ToString());
                         }
                     }
 
@@ -129,7 +130,12 @@ namespace LMUElectronicBridge
 
                     // Systems with Custom Lookups
                     Map(data.Regen_Raw, v => Settings.RegenLevel = v, s => { }, min => Settings.Regen_Min = min, max => Settings.Regen_Max = max, RegenTable);
-                    Map(data.BrakeMigration_Raw, v => Settings.BrakeMigration = v, s => { }, min => Settings.BrakeMigration_Min = min, max => Settings.BrakeMigration_Max = max, BrakeMigrationTable);
+                    Map(data.BrakeMigration_Raw,
+                         v => Settings.BrakeMigration = v,
+                         s => Settings.BrakeMigration_Str = s, // Ensure the string is actually set
+                         min => Settings.BrakeMigration_Min = min,
+                         max => Settings.BrakeMigration_Max = max,
+                         BrakeMigrationTable);
                     Map(data.MotorMap_Raw, v => Settings.ElectricMotorMap = v, s => { }, min => Settings.MotorMap_Min = min, max => Settings.MotorMap_Max = max, MotorMapTable);
 
                     Map(data.Mixture_Raw, v => Settings.EngineMixture = v, s => Settings.EngineMixture_Str = s, min => Settings.Mixture_Min = min, max => Settings.Mixture_Max = max);
