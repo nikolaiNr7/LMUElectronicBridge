@@ -2,20 +2,12 @@
 {
     public class ElectronicSettings
     {
-        // Strategy toggle
-        public bool UseGameSync { get; set; } = true;
 
         // Active runtime values
         public int TC_Main { get; set; } = 0;
         public int TC_Cut { get; set; } = 0;
         public int TC_Slip { get; set; } = 0;
         public int ABS { get; set; } = 0;
-
-        // Manual user values (used if UseGameSync = false)
-        public int TC_Main_User { get; set; } = 0;
-        public int TC_Cut_User { get; set; } = 0;
-        public int TC_Slip_User { get; set; } = 0;
-        public int ABS_User { get; set; } = 0;
 
         // Limits
         public int TC_Main_Max { get; set; } = 11;
