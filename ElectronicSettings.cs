@@ -2,10 +2,19 @@
 
 namespace LMUElectronicBridge
 {
+    // -------------------------------------------------------------------------
+    // CUSTOM ATTRIBUTES
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Links C# properties to specific LMU Garage API JSON keys and UI lookup tables.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
     public class LmuPropertyAttribute : Attribute
     {
         public string JsonKey { get; }
         public string TableName { get; }
+
         public LmuPropertyAttribute(string jsonKey, string tableName = null)
         {
             JsonKey = jsonKey;
@@ -13,9 +22,18 @@ namespace LMUElectronicBridge
         }
     }
 
+    // -------------------------------------------------------------------------
+    // SETTINGS SCHEMA
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Data model representing the electronic state of the car.
+    /// Values starting with -1 or "N/A" indicate the car/API has not been synced.
+    /// </summary>
     public class ElectronicSettings
     {
-        // --- TRACTION CONTROL ---
+        // ---- TRACTION CONTROL -----------------------------------------------
+
         [LmuProperty("VM_TRACTIONCONTROLMAP")]
         public int TC_Main { get; internal set; } = -1;
         public string TC_Main_Str { get; internal set; } = "N/A";
@@ -34,7 +52,9 @@ namespace LMUElectronicBridge
         public int TC_Slip_Max { get; internal set; } = 0;
         public int TC_Slip_Min { get; internal set; } = 0;
 
-        // --- BRAKES ---
+
+        // ---- BRAKE SYSTEMS --------------------------------------------------
+
         [LmuProperty("VM_ANTILOCKBRAKESYSTEMMAP")]
         public int ABS { get; internal set; } = -1;
         public string ABS_Str { get; internal set; } = "N/A";
@@ -47,7 +67,9 @@ namespace LMUElectronicBridge
         public int BrakeMigration_Max { get; internal set; } = 0;
         public int BrakeMigration_Min { get; internal set; } = 0;
 
-        // --- HYBRID / ENGINE ---
+
+        //---- HYBRID & POWERTRAIN --------------------------------------------
+
         [LmuProperty("VM_REGEN_LEVEL", "Regen")]
         public int Regen { get; internal set; } = -1;
         public string Regen_Str { get; internal set; } = "N/A";
@@ -66,7 +88,9 @@ namespace LMUElectronicBridge
         public int Mixture_Max { get; internal set; } = 0;
         public int Mixture_Min { get; internal set; } = 0;
 
-        // --- CHASSIS ---
+
+        // ---- CHASSIS & SUSPENSION -------------------------------------------
+
         [LmuProperty("VM_FRONT_ANTISWAY", "ARB")]
         public int FrontARB { get; internal set; } = -1;
         public string FrontARB_Str { get; internal set; } = "N/A";
@@ -79,9 +103,17 @@ namespace LMUElectronicBridge
         public int RearARB_Max { get; internal set; } = 0;
         public int RearARB_Min { get; internal set; } = 0;
 
-        // --- GLOBAL PLUGIN SETTINGS (Example of things that SHOULD persist) ---
-        // These don't have the LmuProperty attribute, so they won't be overwritten by the API
+
+        // ---- GLOBAL PLUGIN SETTINGS -----------------------------------------
+
+        /// <summary>
+        /// Enable or disable the automatic background sync from LMU Garage API.
+        /// </summary>
         public bool AutoSyncEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Defines the verbosity of the SimHub log output for this plugin.
+        /// </summary>
         public string DebugLogLevel { get; set; } = "Info";
     }
 }
