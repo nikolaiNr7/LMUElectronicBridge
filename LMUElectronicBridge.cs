@@ -148,33 +148,34 @@ namespace LMUElectronicBridge
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task SyncAllFromLMU()
         {
-            var data = await _apiClient.GetElectronicGarageValuesAsync();
-
-            if (data.IsAvailable)
+            try
             {
-                if (data.TC_Main != -1) Settings.TC_Main = data.TC_Main;
-                if (data.TC_Cut != -1) Settings.TC_Cut = data.TC_Cut;
-                if (data.TC_Slip != -1) Settings.TC_Slip = data.TC_Slip;
-                if (data.ABS != -1) Settings.ABS = data.ABS;
-                OnPropertyChanged(nameof(Settings));
-            }
-            else
-            {
-                SyncFromPropertiesFallback();
-            }
-        }
+                // 1. Attempt the data call
+                var data = await _apiClient.GetElectronicGarageValuesAsync();
 
-        /// <summary>
-        /// Updates the active settings by reading specific SimHub properties (e.g., from other plugins).
-        /// </summary>
-        private void SyncFromPropertiesFallback()
-        {
-            Settings.TC_Main = GetSafeInt(Settings.PropPath_TC_Main);
-            Settings.TC_Cut = GetSafeInt(Settings.PropPath_TC_Cut);
-            Settings.TC_Slip = GetSafeInt(Settings.PropPath_TC_Slip);
-            Settings.ABS = GetSafeInt(Settings.PropPath_ABS);
-            OnPropertyChanged(nameof(Settings));
-        }
+                // 2. Process data if the call succeeded and returned valid results
+                if (data != null && data.IsAvailable)
+                {
+                    if (data.TC_Main != -1) Settings.TC_Main = data.TC_Main;
+                    if (data.TC_Cut != -1) Settings.TC_Cut = data.TC_Cut;
+                    if (data.TC_Slip != -1) Settings.TC_Slip = data.TC_Slip;
+                    if (data.ABS != -1) Settings.ABS = data.ABS;
+
+                    OnPropertyChanged(nameof(Settings));
+                }
+                else
+                {
+                    SimHub.Logging.Current.Warn("ElectronicBridge: API returned unavailable state. Using existing values.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // 3. Catch and log the specific error without crashing the plugin
+                SimHub.Logging.Current.Error($"ElectronicBridge: Critical error during API Sync: {ex.Message}");
+                // Optional: Revert to Manual Values as a safe fallback on error
+                // ApplyManualValues();
+            }
+
 
         /// <summary>
         /// Copies the user-defined manual values into the active runtime settings.

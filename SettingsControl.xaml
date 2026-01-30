@@ -80,61 +80,6 @@
                     <TextBlock Text="{Binding Settings.ABS, StringFormat='Active Level: {0}'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
                 </StackPanel>
             </styles:SHSection>
-
-            <styles:SHSection Title="ADVANCED: CUSTOM PROPERTY NAMES" Margin="0,20,0,0">
-                <Expander Header="Edit 3rd Party Property Links" Foreground="White">
-                    <StackPanel Margin="10">
-                        <Border Background="#332200" Padding="10" CornerRadius="4" Margin="0,0,0,15">
-                            <TextBlock Text="INFO: These property names are used only for the INITIAL LOAD at the start of a session or when 'Sync from Game' is pressed. After the initial set, the plugin tracks adjustments locally." 
-                                       Foreground="#FFCC00" TextWrapping="Wrap" FontSize="11" FontStyle="Italic"/>
-                        </Border>
-
-                        <TextBlock Text="TC Main Property Name:" Foreground="#AAAAAA"/>
-                        <Grid Margin="0,2,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding Settings.PropPath_TC_Main}" Background="#222222" Foreground="White" VerticalContentAlignment="Center"/>
-                            <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="TC_Main" Margin="5,0,0,0"/>
-                        </Grid>
-
-                        <TextBlock Text="TC Cut Property Name:" Foreground="#AAAAAA"/>
-                        <Grid Margin="0,2,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding Settings.PropPath_TC_Cut}" Background="#222222" Foreground="White" VerticalContentAlignment="Center"/>
-                            <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="TC_Cut" Margin="5,0,0,0"/>
-                        </Grid>
-
-                        <TextBlock Text="TC Slip Property Name:" Foreground="#AAAAAA"/>
-                        <Grid Margin="0,2,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding Settings.PropPath_TC_Slip}" Background="#222222" Foreground="White" VerticalContentAlignment="Center"/>
-                            <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="TC_Slip" Margin="5,0,0,0"/>
-                        </Grid>
-
-                        <TextBlock Text="ABS Property Name:" Foreground="#AAAAAA"/>
-                        <Grid Margin="0,2,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding Settings.PropPath_ABS}" Background="#222222" Foreground="White" VerticalContentAlignment="Center"/>
-                            <Button Grid.Column="1" Content="Test" Click="Test_Click" Tag="ABS" Margin="5,0,0,0"/>
-                        </Grid>
-
-                        <Button Content="RESET TO DEFAULT NAMES" Click="ResetPaths_Click" 
-                                Background="#442222" Foreground="White" Margin="0,10,0,0" Height="30"/>
-                    </StackPanel>
-                </Expander>
-            </styles:SHSection>
-
         </StackPanel>
     </ScrollViewer>
 </UserControl>
