@@ -27,6 +27,10 @@ namespace LMUElectronicBridge
 
         private LmuApiClient _apiClient = new LmuApiClient();
 
+
+        //----- Constants ------------------------------------------------------
+        private const int LMU_MAX_VALUE_OFFSET = 1; // LMU API max values are exclusive, so we need to subtract 1
+
         //----- State Tracking for resync get Garage Values ------------------
         private string lastSessionType = "";
         private double lastLapCount = 0;
@@ -113,8 +117,6 @@ namespace LMUElectronicBridge
         /// </summary>
         public async Task SyncAllFromLMU()
         {
-
-            // ---  Team Info Sync ---
             // ---  Team Info Sync ---
             JToken teamData = await _apiClient.GetTeamInfoAsync();
             if (teamData != null)
@@ -132,6 +134,7 @@ namespace LMUElectronicBridge
             JObject json = await _apiClient.GetRawGarageDataAsync();
             if (json == null) return;
 
+            // Parse and update each electronic setting
             foreach (var prop in typeof(ElectronicSettings).GetProperties())
             {
                 var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();
@@ -142,12 +145,23 @@ namespace LMUElectronicBridge
                 {
                     int val = Convert.ToInt32(token["value"]);
                     int min = Convert.ToInt32(token["minValue"]);
-                    int max = Convert.ToInt32(token["maxValue"]) - 1;
+                    string apiString = token["stringValue"]?.ToString();
+                    int max = Convert.ToInt32(token["maxValue"]) - LMU_MAX_VALUE_OFFSET;
 
                     prop.SetValue(Settings, val);
                     typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.SetValue(Settings, max);
                     typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.SetValue(Settings, min);
-                    UpdateStringProp(prop.Name, val, attr.TableName);
+
+                    //only update the string property if the API provides a valid string
+                    if (apiString == "N/A")
+                    {
+                        // Use lookup table if available
+                        typeof(ElectronicSettings).GetProperty(prop.Name + "_Str")?.SetValue(Settings, "N/A");
+                    }
+                    else
+                    {
+                        UpdateStringProp(prop.Name, val, attr.TableName);
+                    }
                 }
             }
             OnPropertyChanged(nameof(Settings));
@@ -196,19 +210,25 @@ namespace LMUElectronicBridge
         }
 
         /// <summary>
-        /// Updates the associated string property for a setting based on a lookup table.
+        /// Updates the string representation of a setting.
+        /// Respects API "N/A" status and applies team-specific lookups.
         /// </summary>
         private void UpdateStringProp(string baseName, int val, string tableName)
         {
             var strProp = typeof(ElectronicSettings).GetProperty(baseName + "_Str");
+            if (strProp == null) return;
 
-            // 1. Hole das dynamische Profil
-            var profile = Settings.ActiveTeamProfile;
+            // Check current string value from Settings
+            // If the API previously set this to "N/A", this functionalty is for the current car not available
+            object currentObj = strProp.GetValue(Settings);
+            string currentStr = currentObj != null ? currentObj.ToString() : string.Empty;
+
             IReadOnlyList<string> table = null;
+            var profile = Settings.ActiveTeamProfile;
 
-            if (profile != null)
+            // Map table names to the active team profile lists
+            if (profile != null && tableName != null)
             {
-                // 2. Weise die richtige Tabelle basierend auf dem tableName zu
                 switch (tableName)
                 {
                     case "ARB":
@@ -229,18 +249,22 @@ namespace LMUElectronicBridge
                 }
             }
 
-            // 3. Apply lookup or fallback to ToString()
+            // Determine the final display string
+            string displayValue;
             if (table != null)
             {
-                strProp?.SetValue(Settings, Lookup(table, val));
+                // Use team-specific lookup table
+                displayValue = Lookup(table, val);
             }
             else
             {
-                // Fallback without lookup table (e.g., for TC and ABS) use ToString() except for 0 = "Off"
-                string fallbackValue = (val == 0) ? "Off" : val.ToString();
-                strProp.SetValue(Settings, fallbackValue);
+                // Fallback: Use "Off" for 0, otherwise show raw number
+                displayValue = (val == 0) ? "Off" : val.ToString();
             }
+
+            strProp.SetValue(Settings, displayValue);
         }
+
 
         /// <summary>
         /// Safely retrieves a string from a lookup table based on index.

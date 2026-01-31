@@ -10,36 +10,51 @@
             <styles:SHSection Title="LMU AUTO-SYNC STATUS" ShowSeparator="True">
                 <StackPanel>
                     <Button Content="FORCE SYNC FROM GARAGE" Click="SyncAll_Click" 
-                Height="35" Background="#00FF00" Foreground="Black" FontWeight="Bold" Margin="0,0,0,10"/>
-
+                            Height="35" Background="#00FF00" Foreground="Black" FontWeight="Bold" Margin="0,0,0,10"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.SyncFromGame" FriendlyName="Button to Force Sync from Garage"/>
-
-                    <Border BorderBrush="Orange" 
-                BorderThickness="1" 
-                CornerRadius="2" 
-                Padding="10" 
-                Margin="0,10,0,5" 
-                Background="Transparent">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="⚠" FontSize="18" Foreground="Orange" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <TextBlock TextWrapping="Wrap" Foreground="White" FontSize="12" VerticalAlignment="Center">
-                    <Run FontWeight="Bold" Foreground="Orange" Text="SYNC LIMITATION:"/><LineBreak/>
-                    Changes made via in-game MFD will not sync here. Use these mapped buttons for accurate tracking.
-                            </TextBlock>
-                        </StackPanel>
-                    </Border>
-
-                    <TextBlock Text="Note: Automatic sync occurs on session changes and Garage exits." 
-                   Foreground="Gray" FontSize="11" FontStyle="Italic" Margin="0,5,0,0"/>
                 </StackPanel>
             </styles:SHSection>
 
             <styles:SHSection Title="TRACTION CONTROL (MAIN)" ShowSeparator="True">
                 <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Ellipse Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="#00FF00"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.TC_Main_Str}" Value="">
+                                            <Setter Property="Fill" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.TC_Main_Str}" Value="N/A">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock VerticalAlignment="Center" FontSize="11" FontStyle="Italic">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Synced (All Classes)"/>
+                                    <Setter Property="Foreground" Value="Gray"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.TC_Main_Str}" Value="">
+                                            <Setter Property="Text" Value="Waiting for game sync..."/>
+                                            <Setter Property="Foreground" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.TC_Main_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainIncrease" FriendlyName="TC Main +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_MainDecrease" FriendlyName="TC Main -"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
                         <TextBlock Text="{Binding Settings.TC_Main}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Settings.TC_Main_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
@@ -48,10 +63,44 @@
 
             <styles:SHSection Title="TC POWER CUT" ShowSeparator="True">
                 <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Ellipse Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="#00FF00"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.TC_Cut_Str}" Value="">
+                                            <Setter Property="Fill" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.TC_Cut_Str}" Value="N/A">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock VerticalAlignment="Center" FontSize="11" FontStyle="Italic">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Synced (All Classes)"/>
+                                    <Setter Property="Foreground" Value="Gray"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.TC_Cut_Str}" Value="">
+                                            <Setter Property="Text" Value="Waiting for game sync..."/>
+                                            <Setter Property="Foreground" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.TC_Cut_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutIncrease" FriendlyName="TC Cut +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_CutDecrease" FriendlyName="TC Cut -"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
                         <TextBlock Text="{Binding Settings.TC_Cut}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Settings.TC_Cut_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
@@ -60,10 +109,44 @@
 
             <styles:SHSection Title="TC SLIP ANGLE" ShowSeparator="True">
                 <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Ellipse Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="#00FF00"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.TC_Slip_Str}" Value="">
+                                            <Setter Property="Fill" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.TC_Slip_Str}" Value="N/A">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock VerticalAlignment="Center" FontSize="11" FontStyle="Italic">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Synced (All Classes)"/>
+                                    <Setter Property="Foreground" Value="Gray"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.TC_Slip_Str}" Value="">
+                                            <Setter Property="Text" Value="Waiting for game sync..."/>
+                                            <Setter Property="Foreground" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.TC_Slip_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipIncrease" FriendlyName="TC Slip +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipDecrease" FriendlyName="TC Slip -"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
                         <TextBlock Text="{Binding Settings.TC_Slip}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Settings.TC_Slip_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
@@ -72,10 +155,44 @@
 
             <styles:SHSection Title="ANTI-LOCK BRAKES (ABS)" ShowSeparator="True">
                 <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Ellipse Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="#00FF00"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.ABS_Str}" Value="">
+                                            <Setter Property="Fill" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.ABS_Str}" Value="N/A">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock VerticalAlignment="Center" FontSize="11" FontStyle="Italic">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Synced (GT3 Only)"/>
+                                    <Setter Property="Foreground" Value="Gray"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.ABS_Str}" Value="">
+                                            <Setter Property="Text" Value="Waiting for game sync..."/>
+                                            <Setter Property="Foreground" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.ABS_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSIncrease" FriendlyName="ABS +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.ABSDecrease" FriendlyName="ABS -"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
                         <TextBlock Text="{Binding Settings.ABS}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Settings.ABS_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
@@ -84,72 +201,196 @@
 
             <styles:SHSection Title="BRAKE MIGRATION" ShowSeparator="True">
                 <StackPanel>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.BrakeMigrationDecrease" FriendlyName="Brake Migration to Front"/>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.BrakeMigrationIncrease" FriendlyName="Brake Migration to Back"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Ellipse Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="#00FF00"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.BrakeMigration_Str}" Value="">
+                                            <Setter Property="Fill" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.BrakeMigration_Str}" Value="N/A">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock VerticalAlignment="Center" FontSize="11" FontStyle="Italic">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Synced (Hypercars Only)"/>
+                                    <Setter Property="Foreground" Value="Gray"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.BrakeMigration_Str}" Value="">
+                                            <Setter Property="Text" Value="Waiting for game sync..."/>
+                                            <Setter Property="Foreground" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.BrakeMigration_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.BrakeMigrationDecrease" FriendlyName="Migration to Front"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.BrakeMigrationIncrease" FriendlyName="Migration to Back"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
                         <TextBlock Text="{Binding Settings.BrakeMigration}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Settings.BrakeMigration_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
-            <styles:SHSection Title="REGEN LEVEL" ShowSeparator="True">
+            <styles:SHSection Title="HYBRID (REGEN &amp; MOTOR MAP)" ShowSeparator="True">
                 <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Ellipse Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="#00FF00"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.Regen_Str}" Value="">
+                                            <Setter Property="Fill" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.Regen_Str}" Value="N/A">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock VerticalAlignment="Center" FontSize="11" FontStyle="Italic">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Synced (LMH/LMDh Only)"/>
+                                    <Setter Property="Foreground" Value="Gray"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.Regen_Str}" Value="">
+                                            <Setter Property="Text" Value="Waiting for game sync..."/>
+                                            <Setter Property="Foreground" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.Regen_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.RegenIncrease" FriendlyName="Regen +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.RegenDecrease" FriendlyName="Regen -"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
-                        <TextBlock Text="{Binding Settings.Regen}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.Regen_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.MotorMapIncrease" FriendlyName="Electric Motor Map +"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.MotorMapDecrease" FriendlyName="Electric Motor Map -"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+                        <TextBlock Text="R:" Foreground="Gray" VerticalAlignment="Bottom" Margin="10,0,5,0"/>
+                        <TextBlock Text="{Binding Settings.Regen}" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.Regen_Str, StringFormat=' ({0})'}" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="M:" Foreground="Gray" VerticalAlignment="Bottom" Margin="20,0,5,0"/>
+                        <TextBlock Text="{Binding Settings.MotorMap}" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.MotorMap_Str, StringFormat=' ({0})'}" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
-            <styles:SHSection Title="ELECTRIC MOTOR MAP" ShowSeparator="True">
+            <styles:SHSection Title="Motor Map - ENGINE MIXTURE" ShowSeparator="True">
                 <StackPanel>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.MotorMapIncrease" FriendlyName="Motor Map +"/>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.MotorMapDecrease" FriendlyName="Motor Map -"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
-                        <TextBlock Text="{Binding Settings.MotorMap}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.MotorMap_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Ellipse Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="#00FF00"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.Mixture_Str}" Value="">
+                                            <Setter Property="Fill" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.Mixture_Str}" Value="N/A">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock VerticalAlignment="Center" FontSize="11" FontStyle="Italic">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Synced (None-Hybrid Only)"/>
+                                    <Setter Property="Foreground" Value="Gray"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.Mixture_Str}" Value="">
+                                            <Setter Property="Text" Value="Waiting for game sync..."/>
+                                            <Setter Property="Foreground" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.Mixture_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </StackPanel>
-                </StackPanel>
-            </styles:SHSection>
-
-            <styles:SHSection Title="ENGINE MIXTURE" ShowSeparator="True">
-                <StackPanel>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.MixtureIncrease" FriendlyName="Engine Mixture +"/>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.MixtureDecrease" FriendlyName="Engine Mixture -"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.MixtureIncrease" FriendlyName="Motor Map +"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.MixtureDecrease" FriendlyName="Motor Map -"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
                         <TextBlock Text="{Binding Settings.Mixture}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.Mixture_Str, StringFormat='({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.Mixture_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
             </styles:SHSection>
 
-            <styles:SHSection Title="FRONT ANTI-ROLL BAR" ShowSeparator="True">
+            <styles:SHSection Title="ANTI-ROLL BARS (ARB)" ShowSeparator="True">
                 <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Ellipse Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="#00FF00"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.FrontARB_Str}" Value="">
+                                            <Setter Property="Fill" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.FrontARB_Str}" Value="N/A">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock VerticalAlignment="Center" FontSize="11" FontStyle="Italic">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Synced (Hypercars Only)"/>
+                                    <Setter Property="Foreground" Value="Gray"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.FrontARB_Str}" Value="">
+                                            <Setter Property="Text" Value="Waiting for game sync..."/>
+                                            <Setter Property="Foreground" Value="#555555"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.FrontARB_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.FrontARBIncrease" FriendlyName="Front ARB +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.FrontARBDecrease" FriendlyName="Front ARB -"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Setting: " FontSize="16" Foreground="Gray"/>
-                        <TextBlock Text="{Binding Settings.FrontARB}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.FrontARB_Str, StringFormat='({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                    </StackPanel>
-                </StackPanel>
-            </styles:SHSection>
-
-            <styles:SHSection Title="REAR ANTI-ROLL BAR" ShowSeparator="True">
-                <StackPanel>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.RearARBIncrease" FriendlyName="Rear ARB +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.RearARBDecrease" FriendlyName="Rear ARB -"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Setting: " FontSize="16" Foreground="Gray"/>
-                        <TextBlock Text="{Binding Settings.RearARB}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.RearARB_Str,  StringFormat='({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+                        <TextBlock Text="F:" Foreground="Gray" VerticalAlignment="Center" Margin="10,0,5,0"/>
+                        <TextBlock Text="{Binding Settings.FrontARB}" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.FrontARB_Str, StringFormat=' ({0})'}" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="R:" Foreground="Gray" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <TextBlock Text="{Binding Settings.RearARB}" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.RearARB_Str, StringFormat=' ({0})'}" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
             </styles:SHSection>

@@ -36,19 +36,19 @@ namespace LMUElectronicBridge
 
         [LmuProperty("VM_TRACTIONCONTROLMAP")]
         public int TC_Main { get; internal set; } = -1;
-        public string TC_Main_Str { get; internal set; } = "N/A";
+        public string TC_Main_Str { get; internal set; } = "";
         public int TC_Main_Max { get; internal set; } = 0;
         public int TC_Main_Min { get; internal set; } = 0;
 
         [LmuProperty("VM_TRACTIONCONTROLPOWERCUTMAP")]
         public int TC_Cut { get; internal set; } = -1;
-        public string TC_Cut_Str { get; internal set; } = "N/A";
+        public string TC_Cut_Str { get; internal set; } = "";
         public int TC_Cut_Max { get; internal set; } = 0;
         public int TC_Cut_Min { get; internal set; } = 0;
 
         [LmuProperty("VM_TRACTIONCONTROLSLIPANGLEMAP")]
         public int TC_Slip { get; internal set; } = -1;
-        public string TC_Slip_Str { get; internal set; } = "N/A";
+        public string TC_Slip_Str { get; internal set; } = "";
         public int TC_Slip_Max { get; internal set; } = 0;
         public int TC_Slip_Min { get; internal set; } = 0;
 
@@ -57,13 +57,13 @@ namespace LMUElectronicBridge
 
         [LmuProperty("VM_ANTILOCKBRAKESYSTEMMAP")]
         public int ABS { get; internal set; } = -1;
-        public string ABS_Str { get; internal set; } = "N/A";
+        public string ABS_Str { get; internal set; } = "";
         public int ABS_Max { get; internal set; } = 0;
         public int ABS_Min { get; internal set; } = 0;
 
         [LmuProperty("VM_BRAKE_MIGRATION", "BrakeMigration")]
         public int BrakeMigration { get; internal set; } = -1;
-        public string BrakeMigration_Str { get; internal set; } = "N/A";
+        public string BrakeMigration_Str { get; internal set; } = "";
         public int BrakeMigration_Max { get; internal set; } = 0;
         public int BrakeMigration_Min { get; internal set; } = 0;
 
@@ -72,19 +72,19 @@ namespace LMUElectronicBridge
 
         [LmuProperty("VM_REGEN_LEVEL", "Regen")]
         public int Regen { get; internal set; } = -1;
-        public string Regen_Str { get; internal set; } = "N/A";
+        public string Regen_Str { get; internal set; } = "";
         public int Regen_Max { get; internal set; } = 0;
         public int Regen_Min { get; internal set; } = 0;
 
         [LmuProperty("VM_ELECTRIC_MOTOR_MAP", "MotorMap")]
         public int MotorMap { get; internal set; } = -1;
-        public string MotorMap_Str { get; internal set; } = "N/A";
+        public string MotorMap_Str { get; internal set; } = "";
         public int MotorMap_Max { get; internal set; } = 0;
         public int MotorMap_Min { get; internal set; } = 0;
 
         [LmuProperty("VM_ENGINE_MIXTURE", "EngineMixture")]
         public int Mixture { get; internal set; } = -1;
-        public string Mixture_Str { get; internal set; } = "N/A";
+        public string Mixture_Str { get; internal set; } = "";
         public int Mixture_Max { get; internal set; } = 0;
         public int Mixture_Min { get; internal set; } = 0;
 
@@ -93,19 +93,19 @@ namespace LMUElectronicBridge
 
         [LmuProperty("VM_FRONT_ANTISWAY", "ARB")]
         public int FrontARB { get; internal set; } = -1;
-        public string FrontARB_Str { get; internal set; } = "N/A";
+        public string FrontARB_Str { get; internal set; } = "";
         public int FrontARB_Max { get; internal set; } = 0;
         public int FrontARB_Min { get; internal set; } = 0;
 
         [LmuProperty("VM_REAR_ANTISWAY", "ARB")]
         public int RearARB { get; internal set; } = -1;
-        public string RearARB_Str { get; internal set; } = "N/A";
+        public string RearARB_Str { get; internal set; } = "";
         public int RearARB_Max { get; internal set; } = 0;
         public int RearARB_Min { get; internal set; } = 0;
 
         // ---- TEAM INFO ------------------------------------------------------
-        public string TeamName { get; internal set; } = "N/A";
-        public string VehicleName { get; internal set; } = "N/A";
+        public string TeamName { get; internal set; } = "";
+        public string VehicleName { get; internal set; } = "";
 
         // ---- LOOKUP PROFILES Current Team------------------------------------
         public TeamLookupProfile ActiveTeamProfile { get; internal set; }

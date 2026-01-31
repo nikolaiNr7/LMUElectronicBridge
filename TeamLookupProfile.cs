@@ -23,7 +23,8 @@ namespace LMUElectronicBridge
     {
         Unknown,    // Car class could not be determined
         LMH,        // Le Mans Hypercar
-        LMDH        // Le Mans Daytona Hybrid
+        LMDH,       // Le Mans Daytona Hybrid
+        LMU_NO_MGU_HYPER // Non-hybrid Hypercar
     }
 
     /// <summary>
@@ -109,7 +110,7 @@ namespace LMUElectronicBridge
         private static string NormalizeTeamName(string teamName)
         {
             if (string.IsNullOrWhiteSpace(teamName)) return string.Empty;
-            return Regex.Replace(teamName.Trim(), @"\s20\d{2}$", "");
+            return Regex.Replace(teamName.Trim(), @"\s20\d{2}$", "").Trim();
         }
 
         /// <summary>
@@ -121,6 +122,7 @@ namespace LMUElectronicBridge
         {
             if (TeamMappings.LMU_LMDH.Contains(teamName)) return CarClass.LMDH;
             if (TeamMappings.LMU_LMH.Contains(teamName)) return CarClass.LMH;
+            if(TeamMappings.LMU_NO_MGU_HYPER.Contains(teamName)) return CarClass.LMU_NO_MGU_HYPER;
             return CarClass.Unknown;
         }
 
@@ -132,19 +134,30 @@ namespace LMUElectronicBridge
         /// <returns>List of ARB positions/settings.</returns>
         private IReadOnlyList<string> ResolveARB(Dictionary<string, List<string>> arbMap)
         {
-            // 1️⃣ Exact match
+            // 1. get Exact Match in der Map
             if (arbMap.TryGetValue(RawTeamName, out var direct)) return direct;
 
-            // 2️⃣ Match normalized name (without year)
-            var normalizedMatch = arbMap.FirstOrDefault(k =>
+            // 2. Search for Year-Stripped Match in der Map
+            var normMatch = arbMap.FirstOrDefault(k =>
                 NormalizeTeamName(k.Key).Equals(NormalizedTeamName, StringComparison.OrdinalIgnoreCase));
-            if (!string.IsNullOrEmpty(normalizedMatch.Key)) return normalizedMatch.Value;
+            if (!string.IsNullOrEmpty(normMatch.Key)) return normMatch.Value;
 
-            // 3️⃣ Shared default (common teams without specific mapping)
-            if (TeamMappings.SharedTeams.Contains(NormalizedTeamName))
+            // 3.Finde Shared Default Values
+            bool isShared = false;
+            foreach (var team in TeamMappings.SharedTeams)
+            {
+                if (team.Equals(NormalizedTeamName, StringComparison.OrdinalIgnoreCase))
+                {
+                    isShared = true;
+                    break;
+                }
+            }
+
+            if (isShared)
+            {
                 return TeamMappings.SharedAntisway.ToList();
+            }
 
-            // 4️⃣ Fallback single value if nothing matches
             return new List<string> { "N/A" };
         }
 
@@ -158,7 +171,7 @@ namespace LMUElectronicBridge
                 return new List<string> { "Off", "17kW", "34kW", "51kW", "68kW", "85kW", "102kW", "119kW", "136kW", "153kW", "170kW" };
             if (CarClass == CarClass.LMH)
                 return new List<string> { "Off", "20kW", "40kW", "60kW", "80kW", "100kW", "120kW", "140kW", "160kW", "180kW", "200kW" };
-            // Default for unknown cars
+            // Default for unknown cars that do not support regen levels
             return new List<string> { "N/A", "N/A" };
         }
         /// <summary>
@@ -172,7 +185,8 @@ namespace LMUElectronicBridge
                 return new List<string> { "Off", "10kW", "20kW", "30kW", "40kW", "50kW" };
             if (CarClass == CarClass.LMH)
                 return new List<string> { "Off", "20kW", "40kW", "60kW", "80kW", "100kW", "120kW", "140kW", "160kW", "180kW", "200kW" };
-            return new List<string> { "Safety-car", "Race" };
+            // Default for unknown cars that do not support electric motor maps
+            return new List<string> { "N/A", "N/A" };
         }
 
         /// <summary>
@@ -182,10 +196,10 @@ namespace LMUElectronicBridge
         private IReadOnlyList<string> ResolveBrakeMigration()
         {
             // Applies to both LMDH and LMH cars
-            if (TeamMappings.LMU_LMDH.Contains(RawTeamName) || TeamMappings.LMU_LMH.Contains(RawTeamName))
+            if (TeamMappings.LMU_LMDH.Contains(RawTeamName) || TeamMappings.LMU_LMH.Contains(RawTeamName) || TeamMappings.LMU_NO_MGU_HYPER.Contains(RawTeamName))
                 return new List<string> { "2.5% F", "2.0% F", "1.5% F", "1.0% F", "0.5% F", "Disabled" };
 
-            // Default for unknown cars
+            // Default for unknown cars that do not support brake migration
             return new List<string> { "N/A", "N/A" };
         }
 
@@ -231,6 +245,13 @@ namespace LMUElectronicBridge
                 "Peugeot TotalEnergies",
                 "Toyota Gazoo Racing",
                 "Isotta TIPO6"
+            };
+
+            // Teams categorized as non-hybrid Hypercars and use fore Brake Migration
+            public static readonly HashSet<string> LMU_NO_MGU_HYPER = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Aston Martin THOR Team",
+                "Glickenhaus Racing",
             };
 
             // Front ARB mappings per team
