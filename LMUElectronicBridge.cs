@@ -236,7 +236,9 @@ namespace LMUElectronicBridge
             }
             else
             {
-                strProp?.SetValue(Settings, val.ToString());
+                // Fallback without lookup table (e.g., for TC and ABS) use ToString() except for 0 = "Off"
+                string fallbackValue = (val == 0) ? "Off" : val.ToString();
+                strProp.SetValue(Settings, fallbackValue);
             }
         }
 
