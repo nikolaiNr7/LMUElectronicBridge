@@ -125,7 +125,7 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
                         <TextBlock Text="{Binding Settings.Mixture}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.Mixture_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.Mixture_Str, StringFormat='({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
             </styles:SHSection>
@@ -137,7 +137,7 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBlock Text="Setting: " FontSize="16" Foreground="Gray"/>
                         <TextBlock Text="{Binding Settings.FrontARB}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.FrontARB_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.FrontARB_Str, StringFormat='({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
             </styles:SHSection>
@@ -149,7 +149,7 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBlock Text="Setting: " FontSize="16" Foreground="Gray"/>
                         <TextBlock Text="{Binding Settings.RearARB}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Settings.RearARB_Str,  StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Settings.RearARB_Str,  StringFormat='({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
             </styles:SHSection>
