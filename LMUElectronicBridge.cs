@@ -123,6 +123,18 @@ namespace LMUElectronicBridge
         /// </summary>
         public async Task SyncAllFromLMU()
         {
+
+            // ---  Team Info Sync ---
+            JToken teamData = await _apiClient.GetTeamInfoAsync();
+            if (teamData != null)
+            {
+                Settings.TeamName = teamData["teamName"]?.ToString() ?? "N/A";
+                Settings.VehicleName = teamData["vehicleName"]?.ToString() ?? "N/A";
+            }
+            // -------------------------------------------------------------
+            // -------------------------------------------
+
+            // ---  Garage Settings Sync ---
             JObject json = await _apiClient.GetRawGarageDataAsync();
             if (json == null) return;
 
@@ -154,6 +166,11 @@ namespace LMUElectronicBridge
         /// </summary>
         private void AutoRegister()
         {
+            // Manually register Team Info properties
+            this.AttachDelegate("teamInfo.teamName", () => Settings.TeamName);
+            this.AttachDelegate("teamInfo.vehicleName", () => Settings.VehicleName);
+
+            // Register properties and actions based on ElectronicSettings properties
             foreach (var prop in typeof(ElectronicSettings).GetProperties())
             {
                 var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();

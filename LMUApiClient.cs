@@ -34,5 +34,28 @@ namespace LMUElectronicBridge
                 return null;
             }
         }
+
+
+        /// <summary>
+        /// Fetches team and vehicle information from the TireManagement endpoint.
+        /// Returns only the nested teamInfo object.
+        /// </summary>
+        /// <returns>The teamInfo JToken, or null if not found or request fails.</returns>
+        public async Task<JToken> GetTeamInfoAsync()
+        {
+            try
+            {
+                string json = await _client.GetStringAsync(BaseUrl + "/rest/garage/UIScreen/TireManagement");
+                JObject root = JObject.Parse(json);
+
+                // We just want the teamInfo node so strip rest
+                return root["teamInfo"];
+            }
+            catch (Exception ex)
+            {
+                SimHub.Logging.Current.Error($"LMU Team Info API Connection Failed: {ex.Message}");
+                return null;
+            }
+        }
     }
 }
