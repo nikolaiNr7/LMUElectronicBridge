@@ -4,14 +4,15 @@
 // License: CC BY-NC 4.0 (Attribution-NonCommercial)
 // -------------------------------------------------------------------------
 
+using Newtonsoft.Json.Linq;
 using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Markup;
 using System.Windows.Media;
-using Newtonsoft.Json.Linq;
 
 namespace LMUElectronicBridge
 {
@@ -26,15 +27,9 @@ namespace LMUElectronicBridge
 
         private LmuApiClient _apiClient = new LmuApiClient();
 
-        //----- Lookup Tables for Values to Strings Match ----------------------
-        private static readonly Dictionary<string, string[]> Tables = new Dictionary<string, string[]>
-        {
-            { "BrakeMigration", new[] { "Disabled", "0.5% F", "1.0% F", "1.5% F", "2.0% F", "2.5% F" } },
-            { "MotorMap", new[] { "Off", "10 kW", "20 kW", "30 kW", "40 kW", "50 kW" } },
-            { "Regen", new[] { "Off", "17 kW", "34 kW", "51 kW", "68 kW", "85 kW", "102 kW", "119 kW", "136 kW", "153 kW", "170 kW" } },
-            { "ARB", new[] { "Detached", "P1", "P2", "P3", "P4", "P5" } },
-            { "EngineMixture", new[] { "Safty-Car", "Race" } }
-        };
+
+        //----- Constants ------------------------------------------------------
+        private const int LMU_MAX_VALUE_OFFSET = 1; // LMU API max values are exclusive, so we need to subtract 1
 
         //----- State Tracking for resync get Garage Values ------------------
         private string lastSessionType = "";
@@ -76,9 +71,13 @@ namespace LMUElectronicBridge
         {
             // 1. Basic Check: Is the game running?
             bool isLmu = data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate");
-
             if (isLmu)
             {
+
+                // check is hypercar to enable/disable certain settings
+                Settings.IsHypercar = (data.NewData.CarClass == "LMH" || data.NewData.CarClass == "LMDh" || data.NewData.CarClass == "Hypercar" || data.NewData.CarClass == "Hyper");
+
+
                 // FORCE SYNC ON FIRST LOAD
                 // This covers the "SimHub started late" scenario
                 if (!_firstLoadSyncDone)
@@ -123,23 +122,27 @@ namespace LMUElectronicBridge
         /// </summary>
         public async Task SyncAllFromLMU()
         {
-
             // ---  Team Info Sync ---
             JToken teamData = await _apiClient.GetTeamInfoAsync();
             if (teamData != null)
             {
-                Settings.TeamName = teamData["teamName"]?.ToString() ?? "N/A";
+                string teamName = teamData["teamName"]?.ToString() ?? "N/A";
+                Settings.TeamName = teamName;
                 Settings.VehicleName = teamData["vehicleName"]?.ToString() ?? "N/A";
-            }
-            // -------------------------------------------------------------
-            // -------------------------------------------
 
+                // Initialize the team profile for dynamic lookups
+                Settings.ActiveTeamProfile = new TeamLookupProfile(teamName);
+            }
             // ---  Garage Settings Sync ---
             JObject json = await _apiClient.GetRawGarageDataAsync();
             if (json == null) return;
 
+            // Parse and update each electronic setting
+            // --- Garage Settings Sync ---
             foreach (var prop in typeof(ElectronicSettings).GetProperties())
             {
+
+
                 var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();
                 if (attr == null) continue;
 
@@ -148,14 +151,32 @@ namespace LMUElectronicBridge
                 {
                     int val = Convert.ToInt32(token["value"]);
                     int min = Convert.ToInt32(token["minValue"]);
-                    int max = Convert.ToInt32(token["maxValue"]) - 1;
+                    int max = Convert.ToInt32(token["maxValue"]) - LMU_MAX_VALUE_OFFSET;
+                    string apiString = token["stringValue"]?.ToString();
 
+                    // SEt numeric value, min, max
                     prop.SetValue(Settings, val);
                     typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.SetValue(Settings, max);
                     typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.SetValue(Settings, min);
-                    UpdateStringProp(prop.Name, val, attr.TableName);
+
+                    // --- STRING LOGIK ---
+                    var strProp = typeof(ElectronicSettings).GetProperty(prop.Name + "_Str");
+
+                    // 2. String-Logik mit Range-Check Safeguard
+                    // Wenn Max nicht größer als Min ist, existiert das Feature für dieses Auto faktisch nicht.
+                    if (max <= min || apiString == "N/A")
+                    {
+                        typeof(ElectronicSettings).GetProperty(prop.Name + "_Str")?.SetValue(Settings, "N/A");
+                    }
+                    else
+                    {
+                        // Feature aktiv (Hybrid), aber API liefert keinen Text -> Nutze Lookups
+                        UpdateStringProp(prop.Name, val, attr.TableName);
+                    }
                 }
+
             }
+        
             OnPropertyChanged(nameof(Settings));
         }
 
@@ -202,25 +223,73 @@ namespace LMUElectronicBridge
         }
 
         /// <summary>
-        /// Updates the associated string property for a setting based on a lookup table.
+        /// Updates the string representation of a setting.
+        /// Respects API "N/A" status and applies team-specific lookups.
         /// </summary>
         private void UpdateStringProp(string baseName, int val, string tableName)
         {
             var strProp = typeof(ElectronicSettings).GetProperty(baseName + "_Str");
-            if (tableName != null && Tables.ContainsKey(tableName))
-                strProp?.SetValue(Settings, Lookup(Tables[tableName], val));
+            if (strProp == null) return;
+
+            // Check current string value from Settings
+            // If the API previously set this to "N/A", this functionalty is for the current car not available
+            object currentObj = strProp.GetValue(Settings);
+            string currentStr = currentObj != null ? currentObj.ToString() : string.Empty;
+
+            IReadOnlyList<string> table = null;
+            var profile = Settings.ActiveTeamProfile;
+
+            // Map table names to the active team profile lists
+            if (profile != null && tableName != null)
+            {
+                switch (tableName)
+                {
+                    case "ARB":
+                        table = baseName.Contains("Front") ? profile.FrontARB : profile.RearARB;
+                        break;
+                    case "Regen":
+                        table = profile.RegenLevels;
+                        break;
+                    case "MotorMap":
+                        table = profile.ElectronicMotorMaps;
+                        break;
+                    case "BrakeMigration":
+                        table = profile.BrakeMigration;
+                        break;
+                    case "EngineMixture":
+                        table = profile.EngineMixture;
+                        break;
+                }
+            }
+
+            // Determine the final display string
+            string displayValue;
+            if (table != null)
+            {
+                // Use team-specific lookup table
+                displayValue = Lookup(table, val);
+            }
             else
-                strProp?.SetValue(Settings, val.ToString());
+            {
+                // Fallback: Use "Off" for 0, otherwise show raw number
+                displayValue = (val == 0) ? "Off" : val.ToString();
+            }
+
+            strProp.SetValue(Settings, displayValue);
         }
+
 
         /// <summary>
         /// Safely retrieves a string from a lookup table based on index.
+        /// Returns "N/A" if table is null/empty, or the clamped value.
         /// </summary>
-        private string Lookup(string[] table, int index)
+        private string Lookup(IReadOnlyList<string> table, int index)
         {
-            if (index < 0) return table[0];
-            if (index >= table.Length) return table[table.Length - 1];
-            return table[index];
+            if (table == null || table.Count == 0) return "N/A";
+
+            // Safe clamping of index
+            int safeIndex = Math.Max(0, Math.Min(index, table.Count - 1));
+            return table[safeIndex];
         }
 
         //########### WPF Settings and Termination Interface #####################################################
