@@ -84,8 +84,8 @@
 
             <styles:SHSection Title="BRAKE MIGRATION" ShowSeparator="True">
                 <StackPanel>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.BrakeMigrationIncrease" FriendlyName="Brake Migration +"/>
-                    <ui:ControlsEditor ActionName="LMUElectronicBridge.BrakeMigrationDecrease" FriendlyName="Brake Migration -"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.BrakeMigrationDecrease" FriendlyName="Brake Migration to Front"/>
+                    <ui:ControlsEditor ActionName="LMUElectronicBridge.BrakeMigrationIncrease" FriendlyName="Brake Migration to Back"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBlock Text="Level: " FontSize="16" Foreground="Gray"/>
                         <TextBlock Text="{Binding Settings.BrakeMigration}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
