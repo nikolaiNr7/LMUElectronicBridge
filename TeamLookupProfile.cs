@@ -158,7 +158,8 @@ namespace LMUElectronicBridge
                 return new List<string> { "Off", "17kW", "34kW", "51kW", "68kW", "85kW", "102kW", "119kW", "136kW", "153kW", "170kW" };
             if (CarClass == CarClass.LMH)
                 return new List<string> { "Off", "20kW", "40kW", "60kW", "80kW", "100kW", "120kW", "140kW", "160kW", "180kW", "200kW" };
-            return new List<string> { "", "" };
+            // Default for unknown cars
+            return new List<string> { "N/A", "N/A" };
         }
         /// <summary>
         /// Resolves the electric motor map list depending on car class.
@@ -185,7 +186,7 @@ namespace LMUElectronicBridge
                 return new List<string> { "2.5% F", "2.0% F", "1.5% F", "1.0% F", "0.5% F", "Disabled" };
 
             // Default for unknown cars
-            return new List<string> { "", "" };
+            return new List<string> { "N/A", "N/A" };
         }
 
         // ---------------- Team Mappings (Year-Stripped) ----------------
