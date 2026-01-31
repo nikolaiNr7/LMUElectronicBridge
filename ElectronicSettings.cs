@@ -1,4 +1,5 @@
 ﻿using System;
+using SimHub.Plugins;
 
 namespace LMUElectronicBridge
 {
@@ -32,6 +33,9 @@ namespace LMUElectronicBridge
     /// </summary>
     public class ElectronicSettings
     {
+
+        public bool IsHypercar { get; internal set; } = false;
+
         // ---- TRACTION CONTROL -----------------------------------------------
 
         [LmuProperty("VM_TRACTIONCONTROLMAP")]

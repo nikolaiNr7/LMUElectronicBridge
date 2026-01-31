@@ -73,6 +73,11 @@ namespace LMUElectronicBridge
             bool isLmu = data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate");
             if (isLmu)
             {
+
+                // check is hypercar to enable/disable certain settings
+                Settings.IsHypercar = (data.NewData.CarClass == "LMH" || data.NewData.CarClass == "LMDh" || data.NewData.CarClass == "Hypercar" || data.NewData.CarClass == "Hyper");
+
+
                 // FORCE SYNC ON FIRST LOAD
                 // This covers the "SimHub started late" scenario
                 if (!_firstLoadSyncDone)
@@ -128,15 +133,16 @@ namespace LMUElectronicBridge
                 // Initialize the team profile for dynamic lookups
                 Settings.ActiveTeamProfile = new TeamLookupProfile(teamName);
             }
-
-
             // ---  Garage Settings Sync ---
             JObject json = await _apiClient.GetRawGarageDataAsync();
             if (json == null) return;
 
             // Parse and update each electronic setting
+            // --- Garage Settings Sync ---
             foreach (var prop in typeof(ElectronicSettings).GetProperties())
             {
+
+
                 var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();
                 if (attr == null) continue;
 
@@ -145,25 +151,32 @@ namespace LMUElectronicBridge
                 {
                     int val = Convert.ToInt32(token["value"]);
                     int min = Convert.ToInt32(token["minValue"]);
-                    string apiString = token["stringValue"]?.ToString();
                     int max = Convert.ToInt32(token["maxValue"]) - LMU_MAX_VALUE_OFFSET;
+                    string apiString = token["stringValue"]?.ToString();
 
+                    // SEt numeric value, min, max
                     prop.SetValue(Settings, val);
                     typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.SetValue(Settings, max);
                     typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.SetValue(Settings, min);
 
-                    //only update the string property if the API provides a valid string
-                    if (apiString == "N/A")
+                    // --- STRING LOGIK ---
+                    var strProp = typeof(ElectronicSettings).GetProperty(prop.Name + "_Str");
+
+                    // 2. String-Logik mit Range-Check Safeguard
+                    // Wenn Max nicht größer als Min ist, existiert das Feature für dieses Auto faktisch nicht.
+                    if (max <= min || apiString == "N/A")
                     {
-                        // Use lookup table if available
                         typeof(ElectronicSettings).GetProperty(prop.Name + "_Str")?.SetValue(Settings, "N/A");
                     }
                     else
                     {
+                        // Feature aktiv (Hybrid), aber API liefert keinen Text -> Nutze Lookups
                         UpdateStringProp(prop.Name, val, attr.TableName);
                     }
                 }
+
             }
+        
             OnPropertyChanged(nameof(Settings));
         }
 

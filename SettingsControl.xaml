@@ -213,6 +213,9 @@
                                         <DataTrigger Binding="{Binding Settings.BrakeMigration_Str}" Value="N/A">
                                             <Setter Property="Fill" Value="Orange"/>
                                         </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.IsHypercar}" Value="False">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Ellipse.Style>
@@ -228,6 +231,10 @@
                                             <Setter Property="Foreground" Value="#555555"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Settings.BrakeMigration_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.IsHypercar}" Value="False">
                                             <Setter Property="Text" Value="Not available for this car"/>
                                             <Setter Property="Foreground" Value="Orange"/>
                                         </DataTrigger>
@@ -259,6 +266,9 @@
                                         <DataTrigger Binding="{Binding Settings.Regen_Str}" Value="N/A">
                                             <Setter Property="Fill" Value="Orange"/>
                                         </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.IsHypercar}" Value="False">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Ellipse.Style>
@@ -274,6 +284,10 @@
                                             <Setter Property="Foreground" Value="#555555"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Settings.Regen_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.IsHypercar}" Value="False">
                                             <Setter Property="Text" Value="Not available for this car"/>
                                             <Setter Property="Foreground" Value="Orange"/>
                                         </DataTrigger>
@@ -357,6 +371,9 @@
                                         <DataTrigger Binding="{Binding Settings.FrontARB_Str}" Value="N/A">
                                             <Setter Property="Fill" Value="Orange"/>
                                         </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.IsHypercar}" Value="False">
+                                            <Setter Property="Fill" Value="Orange"/>
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Ellipse.Style>
@@ -372,6 +389,10 @@
                                             <Setter Property="Foreground" Value="#555555"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Settings.FrontARB_Str}" Value="N/A">
+                                            <Setter Property="Text" Value="Not available for this car"/>
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.IsHypercar}" Value="False">
                                             <Setter Property="Text" Value="Not available for this car"/>
                                             <Setter Property="Foreground" Value="Orange"/>
                                         </DataTrigger>
