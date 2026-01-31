@@ -103,6 +103,10 @@ namespace LMUElectronicBridge
         public int RearARB_Max { get; internal set; } = 0;
         public int RearARB_Min { get; internal set; } = 0;
 
+        // ---- TEAM INFO ------------------------------------------------------
+        public string TeamName { get; internal set; } = "N/A";
+        public string VehicleName { get; internal set; } = "N/A";
+
 
         // ---- GLOBAL PLUGIN SETTINGS -----------------------------------------
 
