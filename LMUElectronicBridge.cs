@@ -4,14 +4,15 @@
 // License: CC BY-NC 4.0 (Attribution-NonCommercial)
 // -------------------------------------------------------------------------
 
+using Newtonsoft.Json.Linq;
 using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Markup;
 using System.Windows.Media;
-using Newtonsoft.Json.Linq;
 
 namespace LMUElectronicBridge
 {
@@ -25,16 +26,6 @@ namespace LMUElectronicBridge
         public ElectronicSettings Settings { get; private set; }
 
         private LmuApiClient _apiClient = new LmuApiClient();
-
-        //----- Lookup Tables for Values to Strings Match ----------------------
-        private static readonly Dictionary<string, string[]> Tables = new Dictionary<string, string[]>
-        {
-            { "BrakeMigration", new[] { "Disabled", "0.5% F", "1.0% F", "1.5% F", "2.0% F", "2.5% F" } },
-            { "MotorMap", new[] { "Off", "10 kW", "20 kW", "30 kW", "40 kW", "50 kW" } },
-            { "Regen", new[] { "Off", "17 kW", "34 kW", "51 kW", "68 kW", "85 kW", "102 kW", "119 kW", "136 kW", "153 kW", "170 kW" } },
-            { "ARB", new[] { "Detached", "P1", "P2", "P3", "P4", "P5" } },
-            { "EngineMixture", new[] { "Safty-Car", "Race" } }
-        };
 
         //----- State Tracking for resync get Garage Values ------------------
         private string lastSessionType = "";
@@ -76,7 +67,6 @@ namespace LMUElectronicBridge
         {
             // 1. Basic Check: Is the game running?
             bool isLmu = data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate");
-
             if (isLmu)
             {
                 // FORCE SYNC ON FIRST LOAD
@@ -125,14 +115,18 @@ namespace LMUElectronicBridge
         {
 
             // ---  Team Info Sync ---
+            // ---  Team Info Sync ---
             JToken teamData = await _apiClient.GetTeamInfoAsync();
             if (teamData != null)
             {
-                Settings.TeamName = teamData["teamName"]?.ToString() ?? "N/A";
+                string teamName = teamData["teamName"]?.ToString() ?? "N/A";
+                Settings.TeamName = teamName;
                 Settings.VehicleName = teamData["vehicleName"]?.ToString() ?? "N/A";
+
+                // Initialize the team profile for dynamic lookups
+                Settings.ActiveTeamProfile = new TeamLookupProfile(teamName);
             }
-            // -------------------------------------------------------------
-            // -------------------------------------------
+
 
             // ---  Garage Settings Sync ---
             JObject json = await _apiClient.GetRawGarageDataAsync();
@@ -207,20 +201,56 @@ namespace LMUElectronicBridge
         private void UpdateStringProp(string baseName, int val, string tableName)
         {
             var strProp = typeof(ElectronicSettings).GetProperty(baseName + "_Str");
-            if (tableName != null && Tables.ContainsKey(tableName))
-                strProp?.SetValue(Settings, Lookup(Tables[tableName], val));
+
+            // 1. Hole das dynamische Profil
+            var profile = Settings.ActiveTeamProfile;
+            IReadOnlyList<string> table = null;
+
+            if (profile != null)
+            {
+                // 2. Weise die richtige Tabelle basierend auf dem tableName zu
+                switch (tableName)
+                {
+                    case "ARB":
+                        table = baseName.Contains("Front") ? profile.FrontARB : profile.RearARB;
+                        break;
+                    case "Regen":
+                        table = profile.RegenLevels;
+                        break;
+                    case "MotorMap":
+                        table = profile.ElectronicMotorMaps;
+                        break;
+                    case "BrakeMigration":
+                        table = profile.BrakeMigration;
+                        break;
+                    case "EngineMixture":
+                        table = profile.EngineMixture;
+                        break;
+                }
+            }
+
+            // 3. Apply lookup or fallback to ToString()
+            if (table != null)
+            {
+                strProp?.SetValue(Settings, Lookup(table, val));
+            }
             else
+            {
                 strProp?.SetValue(Settings, val.ToString());
+            }
         }
 
         /// <summary>
         /// Safely retrieves a string from a lookup table based on index.
+        /// Returns "N/A" if table is null/empty, or the clamped value.
         /// </summary>
-        private string Lookup(string[] table, int index)
+        private string Lookup(IReadOnlyList<string> table, int index)
         {
-            if (index < 0) return table[0];
-            if (index >= table.Length) return table[table.Length - 1];
-            return table[index];
+            if (table == null || table.Count == 0) return "N/A";
+
+            // Safe clamping of index
+            int safeIndex = Math.Max(0, Math.Min(index, table.Count - 1));
+            return table[safeIndex];
         }
 
         //########### WPF Settings and Termination Interface #####################################################

@@ -107,6 +107,9 @@ namespace LMUElectronicBridge
         public string TeamName { get; internal set; } = "N/A";
         public string VehicleName { get; internal set; } = "N/A";
 
+        // ---- LOOKUP PROFILES Current Team------------------------------------
+        public TeamLookupProfile ActiveTeamProfile { get; internal set; }
+
 
         // ---- GLOBAL PLUGIN SETTINGS -----------------------------------------
 

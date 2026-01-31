@@ -79,6 +79,12 @@ namespace LMUElectronicBridge
         /// </summary>
         public IReadOnlyList<string> BrakeMigration => ResolveBrakeMigration();
 
+        // In TeamLookupProfile.cs hinzufügen
+        /// <summary>
+        /// Returns a list of available engine mixture settings.
+        /// </summary>
+        public IReadOnlyList<string> EngineMixture => new List<string> { "Safety-Car", "Race" };
+
         // ---------------- Constructor ----------------
 
         /// <summary>
