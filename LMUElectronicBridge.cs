@@ -36,6 +36,7 @@ namespace LMUElectronicBridge
         private double lastLapCount = 0;
         private bool _wasInGarageState = false;
         private bool _firstLoadSyncDone = false;
+        private bool _isTcSlipLinked = false; // for lmp2 and lmp3 cars you can only change TC_Main and this will change TC_Slip as well
 
         //----- Events -------------------------------------------------------
         public event PropertyChangedEventHandler PropertyChanged;
@@ -89,6 +90,14 @@ namespace LMUElectronicBridge
 
                 bool triggerSync = false;
 
+                // If we have a session name but our 'lastSessionType' is still null, 
+                // it means this is the very first frame of data we are seeing.
+                if (string.IsNullOrEmpty(lastSessionType) && !string.IsNullOrEmpty(data.NewData.SessionTypeName))
+                {
+                    SimHub.Logging.Current.Info("LMU Bridge: Initial data received, forcing first sync.");
+                    triggerSync = true;
+                }
+
                 // Trigger: Session Change
                 if (data.NewData.SessionTypeName != lastSessionType)
                 {
@@ -111,6 +120,8 @@ namespace LMUElectronicBridge
             {
                 // Reset the flag if the game is closed, so it's ready for the next launch
                 _firstLoadSyncDone = false;
+                lastSessionType = null;
+                lastLapCount = 0;
             }
         }
 
@@ -158,6 +169,13 @@ namespace LMUElectronicBridge
                     prop.SetValue(Settings, val);
                     typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.SetValue(Settings, max);
                     typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.SetValue(Settings, min);
+
+                    // check if TC_Main and TC_Slipped are linked like in LMP2 or LM3 Cars
+                    if (prop.Name == "TC_Slip")
+                    {
+                        // If the API says "Linked", we lock the control
+                        _isTcSlipLinked = (apiString != null && apiString.Contains("Linked"));
+                    }
 
                     // --- STRING LOGIK ---
                     var strProp = typeof(ElectronicSettings).GetProperty(prop.Name + "_Str");
@@ -208,15 +226,35 @@ namespace LMUElectronicBridge
 
         /// <summary>
         /// Adjusts a value locally and updates its string representation.
+        /// Block updates or adjuments if this values are not availible over the sync api calls (String is N/A or null)
         /// </summary>
         private void ChangeValue(PropertyInfo prop, int delta, string tableName)
         {
+            // 1. Get the current string representation to check status
+            var strProp = typeof(ElectronicSettings).GetProperty(prop.Name + "_Str");
+            string currentStr = strProp?.GetValue(Settings)?.ToString();
+
+            // 2. BLOCK: If functionality is unavailable or locked by the API
+            if (string.IsNullOrEmpty(currentStr) || currentStr == "N/A") return;
+
+            // 3. BLOCK: Specific logic for TC_Slip when linked
+            if (prop.Name == "TC_Slip" && currentStr == "Linked") return;
+
             int current = (int)prop.GetValue(Settings);
             int max = (int)(typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.GetValue(Settings) ?? 10);
             int min = (int)(typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.GetValue(Settings) ?? 0);
 
             int newValue = Math.Max(min, Math.Min(max, current + delta));
             prop.SetValue(Settings, newValue);
+
+            // 4. LINK: If we just changed TC_Main and Slip is linked, update Slip too.
+            if (prop.Name == "TC_Main" && _isTcSlipLinked)
+            {
+                var slipProp = typeof(ElectronicSettings).GetProperty("TC_Slip");
+                slipProp?.SetValue(Settings, newValue);
+                // Ensure the TC_Slip_Str stays "Linked" and doesn't get overwritten by a number
+                typeof(ElectronicSettings).GetProperty("TC_Slip_Str")?.SetValue(Settings, "Linked");
+            }
 
             UpdateStringProp(prop.Name, newValue, tableName);
             OnPropertyChanged(nameof(Settings));
