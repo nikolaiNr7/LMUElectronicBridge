@@ -103,6 +103,15 @@ namespace LMUElectronicBridge
                 if (data.NewData.SessionTypeName != lastSessionType)
                 {
                     lastSessionType = data.NewData.SessionTypeName;
+                    _raceLoadSyncDone = false;    // Reset on Session change to allow fresh sync for new race sessions
+                    triggerSync = true;
+                }
+
+                // check if session is a race and we haven't synced yet for this race
+                // only sync when the ignition is turned on to avoid syncing in the menu, pre race garage or during replays
+                if (data.NewData.SessionTypeName=="Race" && !_raceLoadSyncDone && data.NewData.EngineIgnitionOn == 1)
+                {
+                    _raceLoadSyncDone = true;
                     triggerSync = true;
                 }
 
@@ -123,7 +132,8 @@ namespace LMUElectronicBridge
                 _firstLoadSyncDone = false;
                 lastSessionType = null;
                 lastLapCount = 0;
-            }
+                _raceLoadSyncDone = false;
+    }
         }
 
         //########### APY Sync Logic ##################################################################
