@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows.Markup;
+using System.Linq;
 using System.Windows.Media;
 
 namespace LMUElectronicBridge
@@ -25,11 +25,15 @@ namespace LMUElectronicBridge
         public string LeftMenuTitle => "LMU Electronics Bridge";
         public ElectronicSettings Settings { get; private set; }
 
-        private LmuApiClient _apiClient = new LmuApiClient();
+        private readonly LmuApiClient _apiClient = new LmuApiClient();
 
+        // Reflection Cache to boost performance
+        private readonly Dictionary<string, PropertyInfo> _propCache = new Dictionary<string, PropertyInfo>();
 
         //----- Constants ------------------------------------------------------
-        private const int LMU_MAX_VALUE_OFFSET = 1; // LMU API max values are exclusive, so we need to subtract 1
+        private const int LMU_MAX_VALUE_OFFSET = 1;
+        private const string STATUS_NA = "N/A";
+        private const string STATUS_LINKED = "Linked";
 
         //----- State Tracking for resync get Garage Values ------------------
         private string lastSessionType = "";
@@ -37,138 +41,122 @@ namespace LMUElectronicBridge
         private bool _wasInGarageState = false;
         private bool _firstLoadSyncDone = false;
         private bool _raceLoadSyncDone = false;
-        private bool _isTcSlipLinked = false; // for lmp2 and lmp3 cars you can only change TC_Main and this will change TC_Slip as well
+        private bool _isTcSlipLinked = false;
 
         //----- Events -------------------------------------------------------
         public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Triggers the PropertyChanged event for a given property name.
+        /// </summary>
+        /// <param name="name">The name of the property that changed.</param>
         public void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         //----- Initialize ---------------------------------------------------
+
         /// <summary>
-        /// Instance of the plugin at startup.
+        /// Initializes the plugin, loads settings, and sets up reflection caching.
         /// </summary>
+        /// <param name="pluginManager">The SimHub PluginManager instance.</param>
         public void Init(PluginManager pluginManager)
         {
             PluginManager = pluginManager;
             Settings = this.ReadCommonSettings<ElectronicSettings>("ElectronicSettings", () => new ElectronicSettings());
 
-            // Automatically register all properties and actions based on ElectronicSettings
-            AutoRegister();
+            // Cache properties once at startup to avoid expensive reflection later
+            foreach (var prop in typeof(ElectronicSettings).GetProperties())
+            {
+                _propCache[prop.Name] = prop;
+            }
 
-            // Register the manual sync action
+            AutoRegister();
             this.AddAction("SyncFromGame", (a, b) => { _ = SyncAllFromLMU(); });
         }
 
         //########### Core Data Loop #####################################################
 
         /// <summary>
-        /// Method called at every SimHub data refresh.
-        /// // Triggers sync from LMU Garage API based on game state changes.
-        /// State changes monitored:
-        ///     Session Type Change
-        ///     Garage Exit 
-        ///     Lap Reset (Teleport to pits or Restart)
+        /// Core update loop called by SimHub. Monitors game state to trigger API synchronizations.
         /// </summary>
+        /// <param name="pluginManager">The SimHub PluginManager instance.</param>
+        /// <param name="data">The current game data state.</param>
         public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
         {
-            // 1. Basic Check: Is the game running?
-            bool isLmu = data.NewData != null && (pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate");
-            if (isLmu)
+            if (data.NewData == null || !(pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate"))
             {
-
-                // check is hypercar to enable/disable certain settings
-                Settings.IsHypercar = (data.NewData.CarClass == "LMH" || data.NewData.CarClass == "LMDh" || data.NewData.CarClass == "Hypercar" || data.NewData.CarClass == "Hyper");
-
-
-                // FORCE SYNC ON FIRST LOAD
-                // This covers the "SimHub started late" scenario
-                if (!_firstLoadSyncDone)
-                {
-                    _firstLoadSyncDone = true;
-                    SimHub.Logging.Current.Info("LMU Bridge: Initial sync on plugin load.");
-                    _ = SyncAllFromLMU();
-                }
-
-                bool triggerSync = false;
-
-                // If we have a session name but our 'lastSessionType' is still null, 
-                // it means this is the very first frame of data we are seeing.
-                if (string.IsNullOrEmpty(lastSessionType) && !string.IsNullOrEmpty(data.NewData.SessionTypeName))
-                {
-                    SimHub.Logging.Current.Info("LMU Bridge: Initial data received, forcing first sync.");
-                    triggerSync = true;
-                }
-
-                // Trigger: Session Change
-                if (data.NewData.SessionTypeName != lastSessionType)
-                {
-                    lastSessionType = data.NewData.SessionTypeName;
-                    _raceLoadSyncDone = false;    // Reset on Session change to allow fresh sync for new race sessions
-                    triggerSync = true;
-                }
-
-                // check if session is a race and we haven't synced yet for this race
-                // only sync when the ignition is turned on to avoid syncing in the menu, pre race garage or during replays
-                if (data.NewData.SessionTypeName=="Race" && !_raceLoadSyncDone && data.NewData.EngineIgnitionOn == 1)
-                {
-                    _raceLoadSyncDone = true;
-                    triggerSync = true;
-                }
-
-                // Trigger: Lap Reset (Teleport to pits or Restart)
-                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1)
-                {
-                    _raceLoadSyncDone = false; // Session got reseted, also need to reset the race
-                    triggerSync = true;
-                }
-                lastLapCount = data.NewData.CurrentLap;
-
-                // Trigger: Garage Exit (Ignition on while in pits)
-                bool currentGarageState = (data.NewData.IsInPit == 1 && data.NewData.EngineIgnitionOn == 0);
-                if (_wasInGarageState && data.NewData.EngineIgnitionOn == 1) triggerSync = true;
-                _wasInGarageState = currentGarageState;
-
-                if (triggerSync) _ = SyncAllFromLMU();
+                ResetState();
+                return;
             }
-            else
+
+            // Update Car Class Status
+            Settings.IsHypercar = IsHypercarClass(data.NewData.CarClass);
+
+            bool triggerSync = false;
+
+            // 1. First Load Sync
+            if (!_firstLoadSyncDone)
             {
-                // Reset the flag if the game is closed, so it's ready for the next launch
-                _firstLoadSyncDone = false;
-                lastSessionType = null;
-                lastLapCount = 0;
+                _firstLoadSyncDone = true;
+                triggerSync = true;
+            }
+
+            // 2. Initial Data Sync
+            if (string.IsNullOrEmpty(lastSessionType) && !string.IsNullOrEmpty(data.NewData.SessionTypeName))
+                triggerSync = true;
+
+            // 3. Session Change Trigger
+            if (data.NewData.SessionTypeName != lastSessionType)
+            {
+                lastSessionType = data.NewData.SessionTypeName;
                 _raceLoadSyncDone = false;
-    }
+                triggerSync = true;
+            }
+
+            // 4. Race Specific Sync (on Ignition)
+            if (data.NewData.SessionTypeName == "Race" && !_raceLoadSyncDone && data.NewData.EngineIgnitionOn == 1)
+            {
+                _raceLoadSyncDone = true;
+                triggerSync = true;
+            }
+
+            // 5. Lap Reset Trigger
+            if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1)
+            {
+                _raceLoadSyncDone = false;
+                triggerSync = true;
+            }
+            lastLapCount = data.NewData.CurrentLap;
+
+            // 6. Garage Exit Trigger
+            bool currentGarageState = (data.NewData.IsInPit == 1 && data.NewData.EngineIgnitionOn == 0);
+            if (_wasInGarageState && data.NewData.EngineIgnitionOn == 1) triggerSync = true;
+            _wasInGarageState = currentGarageState;
+
+            if (triggerSync) _ = SyncAllFromLMU();
         }
+
 
         //########### APY Sync Logic ##################################################################
 
-
         /// <summary>
-        /// Fetches all electronic data from the LMU API and updates settings.
+        /// Asynchronously fetches team and garage data from the LMU API and updates all relevant settings.
         /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task SyncAllFromLMU()
         {
-            // ---  Team Info Sync ---
             JToken teamData = await _apiClient.GetTeamInfoAsync();
             if (teamData != null)
             {
-                string teamName = teamData["teamName"]?.ToString() ?? "N/A";
-                Settings.TeamName = teamName;
-                Settings.VehicleName = teamData["vehicleName"]?.ToString() ?? "N/A";
-
-                // Initialize the team profile for dynamic lookups
-                Settings.ActiveTeamProfile = new TeamLookupProfile(teamName);
+                Settings.TeamName = teamData["teamName"]?.ToString() ?? STATUS_NA;
+                Settings.VehicleName = teamData["vehicleName"]?.ToString() ?? STATUS_NA;
+                Settings.ActiveTeamProfile = new TeamLookupProfile(Settings.TeamName);
             }
-            // ---  Garage Settings Sync ---
+
             JObject json = await _apiClient.GetRawGarageDataAsync();
             if (json == null) return;
 
-            // Parse and update each electronic setting
-            // --- Garage Settings Sync ---
-            foreach (var prop in typeof(ElectronicSettings).GetProperties())
+            foreach (var prop in _propCache.Values)
             {
-
-
                 var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();
                 if (attr == null) continue;
 
@@ -180,65 +168,108 @@ namespace LMUElectronicBridge
                     int max = Convert.ToInt32(token["maxValue"]) - LMU_MAX_VALUE_OFFSET;
                     string apiString = token["stringValue"]?.ToString();
 
-                    // SEt numeric value, min, max
+                    // Update Numerics
                     prop.SetValue(Settings, val);
-                    typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.SetValue(Settings, max);
-                    typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.SetValue(Settings, min);
+                    GetCachedProp(prop.Name + "_Max")?.SetValue(Settings, max);
+                    GetCachedProp(prop.Name + "_Min")?.SetValue(Settings, min);
 
-                    // check if TC_Main and TC_Slipped are linked like in LMP2 or LM3 Cars
+                    // Logic Check for TC Linking
                     if (prop.Name == "TC_Slip")
-                    {
-                        // If the API says "Linked", we lock the control
-                        _isTcSlipLinked = (apiString != null && apiString.Contains("Linked"));
-                    }
+                        _isTcSlipLinked = apiString != null && apiString.Contains(STATUS_LINKED);
 
-                    // --- STRING LOGIK ---
-                    var strProp = typeof(ElectronicSettings).GetProperty(prop.Name + "_Str");
-                    if (strProp != null)
-                    {
-                        // 1. If API says N/A or feature is physically missing (max <= min)
-                        if (max <= min || apiString == "N/A")
-                        {
-                            strProp.SetValue(Settings, "N/A");
-                        }
-                        // 2. Set String Value as it is from Gamr if it's provided (This covers "Linked" status for TC_Slip in LMP2/3)
-                        else if (!string.IsNullOrEmpty(apiString))
-                        {
-                            strProp.SetValue(Settings, apiString);
-                        }
-                        // 3. Otherwise, use our custom Lookups
-                        else
-                        {
-                            UpdateStringProp(prop.Name, val, attr.TableName, true); // true = force bypass N/A
-                        }
-                    }
+                    // Centralized String Update
+                    UpdateStringLogic(prop.Name, val, max, min, apiString, attr.TableName, true);
                 }
-
             }
-        
             OnPropertyChanged(nameof(Settings));
+        }
+
+        /// <summary>
+        /// Centralized decision engine for setting the display string based on API state and local lookups.
+        /// </summary>
+        /// <param name="baseName">The base name of the electronic property.</param>
+        /// <param name="val">The current numeric value.</param>
+        /// <param name="max">The maximum allowed value.</param>
+        /// <param name="min">The minimum allowed value.</param>
+        /// <param name="apiString">The string value provided by the API.</param>
+        /// <param name="tableName">The lookup table name defined in the attribute.</param>
+        /// <param name="isFullSync">Whether this is a full API sync or a manual button adjustment.</param>
+        private void UpdateStringLogic(string baseName, int val, int max, int min, string apiString, string tableName, bool isFullSync)
+        {
+            var strProp = GetCachedProp(baseName + "_Str");
+            if (strProp == null) return;
+
+            // 1. Block manual updates if already N/A or Linked
+            if (!isFullSync)
+            {
+                string current = strProp.GetValue(Settings)?.ToString();
+                if (current == STATUS_NA || current == STATUS_LINKED) return;
+            }
+
+            // 2. Priority: N/A check
+            if (max <= min || apiString == STATUS_NA)
+            {
+                strProp.SetValue(Settings, STATUS_NA);
+                return;
+            }
+
+            // 3. Priority: API provided special strings (e.g., "Linked")
+            if (!string.IsNullOrEmpty(apiString) && apiString.Any(char.IsLetter))
+            {
+                strProp.SetValue(Settings, apiString);
+                return;
+            }
+
+            // 4. Fallback: Custom Lookups
+            UpdateStringProp(baseName, val, tableName);
         }
 
         //########### Helper Functions ##################################################################
 
         /// <summary>
-        /// Automatically registers settings properties as SimHub properties and actions.
+        /// Resets the internal state trackers, usually when the game is closed.
+        /// </summary>
+        private void ResetState()
+        {
+            _firstLoadSyncDone = false;
+            _raceLoadSyncDone = false;
+            lastSessionType = null;
+            lastLapCount = 0;
+        }
+
+        /// <summary>
+        /// Determines if the current car class belongs to the Hypercar category.
+        /// </summary>
+        /// <param name="carClass">The car class string from SimHub.</param>
+        /// <returns>True if the class is Hypercar, otherwise false.</returns>
+        private bool IsHypercarClass(string carClass)
+        {
+            return carClass == "LMH" || carClass == "LMDh" || carClass == "Hypercar" || carClass == "Hyper";
+        }
+
+        /// <summary>
+        /// Retrieves a PropertyInfo object from the internal cache.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <returns>The PropertyInfo if found, otherwise null.</returns>
+        private PropertyInfo GetCachedProp(string name) => _propCache.TryGetValue(name, out var p) ? p : null;
+
+        /// <summary>
+        /// Automatically registers SimHub properties and actions based on the ElectronicSettings class.
         /// </summary>
         private void AutoRegister()
         {
-            // Manually register Team Info properties
             this.AttachDelegate("teamInfo.teamName", () => Settings.TeamName);
             this.AttachDelegate("teamInfo.vehicleName", () => Settings.VehicleName);
 
-            // Register properties and actions based on ElectronicSettings properties
-            foreach (var prop in typeof(ElectronicSettings).GetProperties())
+            foreach (var prop in _propCache.Values)
             {
                 var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();
                 if (attr == null) continue;
 
                 string name = prop.Name;
                 this.AttachDelegate(name, () => prop.GetValue(Settings));
-                this.AttachDelegate(name + "_Str", () => typeof(ElectronicSettings).GetProperty(name + "_Str")?.GetValue(Settings));
+                this.AttachDelegate(name + "_Str", () => GetCachedProp(name + "_Str")?.GetValue(Settings));
 
                 this.AddAction(name + "Increase", (a, b) => ChangeValue(prop, 1, attr.TableName));
                 this.AddAction(name + "Decrease", (a, b) => ChangeValue(prop, -1, attr.TableName));
@@ -246,68 +277,48 @@ namespace LMUElectronicBridge
         }
 
         /// <summary>
-        /// Adjusts a value locally and updates its string representation.
-        /// Block updates or adjuments if this values are not availible over the sync api calls (String is N/A or null)
+        /// Adjusts the numeric value of a property, handles clamping, and updates linked TC properties.
         /// </summary>
+        /// <param name="prop">The property to change.</param>
+        /// <param name="delta">The amount to change (e.g., +1 or -1).</param>
+        /// <param name="tableName">The lookup table name for string conversion.</param>
         private void ChangeValue(PropertyInfo prop, int delta, string tableName)
         {
-            // 1. Get the current string representation to check status
-            var strProp = typeof(ElectronicSettings).GetProperty(prop.Name + "_Str");
-            string currentStr = strProp?.GetValue(Settings)?.ToString();
-
-            // 2. BLOCK: If functionality is unavailable or locked by the API
-            if (string.IsNullOrEmpty(currentStr) || currentStr == "N/A") return;
-
-            // 3. BLOCK: Specific logic for TC_Slip when linked
-            if (prop.Name == "TC_Slip" && currentStr == "Linked") return;
-
             int current = (int)prop.GetValue(Settings);
-            int max = (int)(typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.GetValue(Settings) ?? 10);
-            int min = (int)(typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.GetValue(Settings) ?? 0);
+            int max = (int)(GetCachedProp(prop.Name + "_Max")?.GetValue(Settings) ?? 10);
+            int min = (int)(GetCachedProp(prop.Name + "_Min")?.GetValue(Settings) ?? 0);
+
+            // Logic-based guard (ChangeValue only happens via buttons, so isFullSync = false)
+            UpdateStringLogic(prop.Name, current, max, min, null, tableName, false);
+
+            // Re-check string after logic guard to see if we should proceed
+            string currentStr = GetCachedProp(prop.Name + "_Str")?.GetValue(Settings)?.ToString();
+            if (currentStr == STATUS_NA || (prop.Name == "TC_Slip" && currentStr == STATUS_LINKED)) return;
 
             int newValue = Math.Max(min, Math.Min(max, current + delta));
             prop.SetValue(Settings, newValue);
 
-            // 4. LINK: If we just changed TC_Main and Slip is linked, update Slip too.
+            // Handle TC Main -> Slip Slave Link
             if (prop.Name == "TC_Main" && _isTcSlipLinked)
             {
-                var slipProp = typeof(ElectronicSettings).GetProperty("TC_Slip");
-                slipProp?.SetValue(Settings, newValue);
-                // Ensure the TC_Slip_Str stays "Linked" and doesn't get overwritten by a number
-                typeof(ElectronicSettings).GetProperty("TC_Slip_Str")?.SetValue(Settings, "Linked");
+                GetCachedProp("TC_Slip")?.SetValue(Settings, newValue);
+                GetCachedProp("TC_Slip_Str")?.SetValue(Settings, STATUS_LINKED);
             }
 
-            UpdateStringProp(prop.Name, newValue, tableName, false);
+            UpdateStringProp(prop.Name, newValue, tableName);
             OnPropertyChanged(nameof(Settings));
         }
 
         /// <summary>
-        /// Updates the string representation of a setting.
-        /// forceUpdate = true: Overwrites everything (used for full syncs).
-        /// forceUpdate = false: Respects N/A and Linked blocks (used for button presses).
+        /// Updates the string representation property using the active team lookup profile.
         /// </summary>
-        private void UpdateStringProp(string baseName, int val, string tableName, bool forceUpdate = false)
+        /// <param name="baseName">The base name of the electronic property.</param>
+        /// <param name="val">The current numeric value.</param>
+        /// <param name="tableName">The lookup table category (e.g., "ARB", "Regen").</param>
+        private void UpdateStringProp(string baseName, int val, string tableName)
         {
-            var strProp = typeof(ElectronicSettings).GetProperty(baseName + "_Str");
-            if (strProp == null) return;
-
-
-            // 2. Protection Guard
-            if (!forceUpdate)
-            {
-                object currentObj = strProp.GetValue(Settings);
-                string currentStr = currentObj?.ToString() ?? string.Empty;
-
-                // If it's a button press, don't let it change a special state
-                if (currentStr == "Linked" || currentStr == "N/A")
-                {
-                    return;
-                }
-            }
-
-            // 3. Normal Lookup Logic
-            IReadOnlyList<string> table = null;
             var profile = Settings.ActiveTeamProfile;
+            IReadOnlyList<string> table = null;
 
             if (profile != null && tableName != null)
             {
@@ -321,28 +332,35 @@ namespace LMUElectronicBridge
                 }
             }
 
-            string displayValue = (table != null) ? Lookup(table, val) : (val == 0 ? "Off" : val.ToString());
-
-            strProp.SetValue(Settings, displayValue);
+            string displayValue = table != null ? Lookup(table, val) : (val == 0 ? "Off" : val.ToString());
+            GetCachedProp(baseName + "_Str")?.SetValue(Settings, displayValue);
         }
 
-
         /// <summary>
-        /// Safely retrieves a string from a lookup table based on index.
-        /// Returns "N/A" if table is null/empty, or the clamped value.
+        /// Performs a safe index-based lookup in a string list.
         /// </summary>
+        /// <param name="table">The list of strings to look up from.</param>
+        /// <param name="index">The desired index.</param>
+        /// <returns>The string at the clamped index, or "N/A" if the table is empty.</returns>
         private string Lookup(IReadOnlyList<string> table, int index)
         {
-            if (table == null || table.Count == 0) return "N/A";
-
-            // Safe clamping of index
-            int safeIndex = Math.Max(0, Math.Min(index, table.Count - 1));
-            return table[safeIndex];
+            if (table == null || table.Count == 0) return STATUS_NA;
+            return table[Math.Max(0, Math.Min(index, table.Count - 1))];
         }
 
         //########### WPF Settings and Termination Interface #####################################################
+
+        /// <summary>
+        /// Called by SimHub when the plugin is being shut down. Saves settings.
+        /// </summary>
+        /// <param name="pm">The SimHub PluginManager instance.</param>
         public void End(PluginManager pm) => this.SaveCommonSettings("ElectronicSettings", Settings);
 
+        /// <summary>
+        /// Returns the WPF control for the plugin settings menu in SimHub.
+        /// </summary>
+        /// <param name="pm">The SimHub PluginManager instance.</param>
+        /// <returns>A WPF Control instance.</returns>
         public System.Windows.Controls.Control GetWPFSettingsControl(PluginManager pm) => new SettingsControl(this);
     }
 }
