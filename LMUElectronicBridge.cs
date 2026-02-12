@@ -213,8 +213,8 @@ namespace LMUElectronicBridge
                 return;
             }
 
-            // 3. Priority: API provided special strings (e.g., "Linked")
-            if (!string.IsNullOrEmpty(apiString) && apiString.Any(char.IsLetter))
+            // 3. Priority: if API explicitly provides "Linked" status (currently only for TC Slip)
+            if (!string.IsNullOrEmpty(apiString) && apiString.Contains(STATUS_LINKED))
             {
                 strProp.SetValue(Settings, apiString);
                 return;
