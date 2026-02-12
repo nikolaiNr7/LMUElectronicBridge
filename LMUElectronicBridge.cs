@@ -116,7 +116,11 @@ namespace LMUElectronicBridge
                 }
 
                 // Trigger: Lap Reset (Teleport to pits or Restart)
-                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1) triggerSync = true;
+                if (data.NewData.CurrentLap < lastLapCount && data.NewData.CurrentLap <= 1)
+                {
+                    _raceLoadSyncDone = false; // Session got reseted, also need to reset the race
+                    triggerSync = true;
+                }
                 lastLapCount = data.NewData.CurrentLap;
 
                 // Trigger: Garage Exit (Ignition on while in pits)
