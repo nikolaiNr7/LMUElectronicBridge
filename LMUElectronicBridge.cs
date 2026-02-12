@@ -36,6 +36,8 @@ namespace LMUElectronicBridge
         private double lastLapCount = 0;
         private bool _wasInGarageState = false;
         private bool _firstLoadSyncDone = false;
+        private bool _raceLoadSyncDone = false;
+        private bool _isTcSlipLinked = false; // for lmp2 and lmp3 cars you can only change TC_Main and this will change TC_Slip as well
 
         //----- Events -------------------------------------------------------
         public event PropertyChangedEventHandler PropertyChanged;
@@ -89,6 +91,14 @@ namespace LMUElectronicBridge
 
                 bool triggerSync = false;
 
+                // If we have a session name but our 'lastSessionType' is still null, 
+                // it means this is the very first frame of data we are seeing.
+                if (string.IsNullOrEmpty(lastSessionType) && !string.IsNullOrEmpty(data.NewData.SessionTypeName))
+                {
+                    SimHub.Logging.Current.Info("LMU Bridge: Initial data received, forcing first sync.");
+                    triggerSync = true;
+                }
+
                 // Trigger: Session Change
                 if (data.NewData.SessionTypeName != lastSessionType)
                 {
@@ -111,6 +121,8 @@ namespace LMUElectronicBridge
             {
                 // Reset the flag if the game is closed, so it's ready for the next launch
                 _firstLoadSyncDone = false;
+                lastSessionType = null;
+                lastLapCount = 0;
             }
         }
 
@@ -159,19 +171,32 @@ namespace LMUElectronicBridge
                     typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.SetValue(Settings, max);
                     typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.SetValue(Settings, min);
 
+                    // check if TC_Main and TC_Slipped are linked like in LMP2 or LM3 Cars
+                    if (prop.Name == "TC_Slip")
+                    {
+                        // If the API says "Linked", we lock the control
+                        _isTcSlipLinked = (apiString != null && apiString.Contains("Linked"));
+                    }
+
                     // --- STRING LOGIK ---
                     var strProp = typeof(ElectronicSettings).GetProperty(prop.Name + "_Str");
-
-                    // 2. String-Logik mit Range-Check Safeguard
-                    // Wenn Max nicht größer als Min ist, existiert das Feature für dieses Auto faktisch nicht.
-                    if (max <= min || apiString == "N/A")
+                    if (strProp != null)
                     {
-                        typeof(ElectronicSettings).GetProperty(prop.Name + "_Str")?.SetValue(Settings, "N/A");
-                    }
-                    else
-                    {
-                        // Feature aktiv (Hybrid), aber API liefert keinen Text -> Nutze Lookups
-                        UpdateStringProp(prop.Name, val, attr.TableName);
+                        // 1. If API says N/A or feature is physically missing (max <= min)
+                        if (max <= min || apiString == "N/A")
+                        {
+                            strProp.SetValue(Settings, "N/A");
+                        }
+                        // 2. Set String Value as it is from Gamr if it's provided (This covers "Linked" status for TC_Slip in LMP2/3)
+                        else if (!string.IsNullOrEmpty(apiString))
+                        {
+                            strProp.SetValue(Settings, apiString);
+                        }
+                        // 3. Otherwise, use our custom Lookups
+                        else
+                        {
+                            UpdateStringProp(prop.Name, val, attr.TableName, true); // true = force bypass N/A
+                        }
                     }
                 }
 
@@ -208,9 +233,20 @@ namespace LMUElectronicBridge
 
         /// <summary>
         /// Adjusts a value locally and updates its string representation.
+        /// Block updates or adjuments if this values are not availible over the sync api calls (String is N/A or null)
         /// </summary>
         private void ChangeValue(PropertyInfo prop, int delta, string tableName)
         {
+            // 1. Get the current string representation to check status
+            var strProp = typeof(ElectronicSettings).GetProperty(prop.Name + "_Str");
+            string currentStr = strProp?.GetValue(Settings)?.ToString();
+
+            // 2. BLOCK: If functionality is unavailable or locked by the API
+            if (string.IsNullOrEmpty(currentStr) || currentStr == "N/A") return;
+
+            // 3. BLOCK: Specific logic for TC_Slip when linked
+            if (prop.Name == "TC_Slip" && currentStr == "Linked") return;
+
             int current = (int)prop.GetValue(Settings);
             int max = (int)(typeof(ElectronicSettings).GetProperty(prop.Name + "_Max")?.GetValue(Settings) ?? 10);
             int min = (int)(typeof(ElectronicSettings).GetProperty(prop.Name + "_Min")?.GetValue(Settings) ?? 0);
@@ -218,62 +254,60 @@ namespace LMUElectronicBridge
             int newValue = Math.Max(min, Math.Min(max, current + delta));
             prop.SetValue(Settings, newValue);
 
-            UpdateStringProp(prop.Name, newValue, tableName);
+            // 4. LINK: If we just changed TC_Main and Slip is linked, update Slip too.
+            if (prop.Name == "TC_Main" && _isTcSlipLinked)
+            {
+                var slipProp = typeof(ElectronicSettings).GetProperty("TC_Slip");
+                slipProp?.SetValue(Settings, newValue);
+                // Ensure the TC_Slip_Str stays "Linked" and doesn't get overwritten by a number
+                typeof(ElectronicSettings).GetProperty("TC_Slip_Str")?.SetValue(Settings, "Linked");
+            }
+
+            UpdateStringProp(prop.Name, newValue, tableName, false);
             OnPropertyChanged(nameof(Settings));
         }
 
         /// <summary>
         /// Updates the string representation of a setting.
-        /// Respects API "N/A" status and applies team-specific lookups.
+        /// forceUpdate = true: Overwrites everything (used for full syncs).
+        /// forceUpdate = false: Respects N/A and Linked blocks (used for button presses).
         /// </summary>
-        private void UpdateStringProp(string baseName, int val, string tableName)
+        private void UpdateStringProp(string baseName, int val, string tableName, bool forceUpdate = false)
         {
             var strProp = typeof(ElectronicSettings).GetProperty(baseName + "_Str");
             if (strProp == null) return;
 
-            // Check current string value from Settings
-            // If the API previously set this to "N/A", this functionalty is for the current car not available
-            object currentObj = strProp.GetValue(Settings);
-            string currentStr = currentObj != null ? currentObj.ToString() : string.Empty;
 
+            // 2. Protection Guard
+            if (!forceUpdate)
+            {
+                object currentObj = strProp.GetValue(Settings);
+                string currentStr = currentObj?.ToString() ?? string.Empty;
+
+                // If it's a button press, don't let it change a special state
+                if (currentStr == "Linked" || currentStr == "N/A")
+                {
+                    return;
+                }
+            }
+
+            // 3. Normal Lookup Logic
             IReadOnlyList<string> table = null;
             var profile = Settings.ActiveTeamProfile;
 
-            // Map table names to the active team profile lists
             if (profile != null && tableName != null)
             {
                 switch (tableName)
                 {
-                    case "ARB":
-                        table = baseName.Contains("Front") ? profile.FrontARB : profile.RearARB;
-                        break;
-                    case "Regen":
-                        table = profile.RegenLevels;
-                        break;
-                    case "MotorMap":
-                        table = profile.ElectronicMotorMaps;
-                        break;
-                    case "BrakeMigration":
-                        table = profile.BrakeMigration;
-                        break;
-                    case "EngineMixture":
-                        table = profile.EngineMixture;
-                        break;
+                    case "ARB": table = baseName.Contains("Front") ? profile.FrontARB : profile.RearARB; break;
+                    case "Regen": table = profile.RegenLevels; break;
+                    case "MotorMap": table = profile.ElectronicMotorMaps; break;
+                    case "BrakeMigration": table = profile.BrakeMigration; break;
+                    case "EngineMixture": table = profile.EngineMixture; break;
                 }
             }
 
-            // Determine the final display string
-            string displayValue;
-            if (table != null)
-            {
-                // Use team-specific lookup table
-                displayValue = Lookup(table, val);
-            }
-            else
-            {
-                // Fallback: Use "Off" for 0, otherwise show raw number
-                displayValue = (val == 0) ? "Off" : val.ToString();
-            }
+            string displayValue = (table != null) ? Lookup(table, val) : (val == 0 ? "Off" : val.ToString());
 
             strProp.SetValue(Settings, displayValue);
         }
