@@ -36,6 +36,7 @@ namespace LMUElectronicBridge
         private double lastLapCount = 0;
         private bool _wasInGarageState = false;
         private bool _firstLoadSyncDone = false;
+        private bool _raceLoadSyncDone = false;
         private bool _isTcSlipLinked = false; // for lmp2 and lmp3 cars you can only change TC_Main and this will change TC_Slip as well
 
         //----- Events -------------------------------------------------------
@@ -179,17 +180,23 @@ namespace LMUElectronicBridge
 
                     // --- STRING LOGIK ---
                     var strProp = typeof(ElectronicSettings).GetProperty(prop.Name + "_Str");
-
-                    // 2. String-Logik mit Range-Check Safeguard
-                    // Wenn Max nicht größer als Min ist, existiert das Feature für dieses Auto faktisch nicht.
-                    if (max <= min || apiString == "N/A")
+                    if (strProp != null)
                     {
-                        typeof(ElectronicSettings).GetProperty(prop.Name + "_Str")?.SetValue(Settings, "N/A");
-                    }
-                    else
-                    {
-                        // Feature aktiv (Hybrid), aber API liefert keinen Text -> Nutze Lookups
-                        UpdateStringProp(prop.Name, val, attr.TableName, true);
+                        // 1. If API says N/A or feature is physically missing (max <= min)
+                        if (max <= min || apiString == "N/A")
+                        {
+                            strProp.SetValue(Settings, "N/A");
+                        }
+                        // 2. Set String Value as it is from Gamr if it's provided (This covers "Linked" status for TC_Slip in LMP2/3)
+                        else if (!string.IsNullOrEmpty(apiString))
+                        {
+                            strProp.SetValue(Settings, apiString);
+                        }
+                        // 3. Otherwise, use our custom Lookups
+                        else
+                        {
+                            UpdateStringProp(prop.Name, val, attr.TableName, true); // true = force bypass N/A
+                        }
                     }
                 }
 
