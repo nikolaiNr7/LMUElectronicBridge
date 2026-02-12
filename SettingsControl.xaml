@@ -121,10 +121,14 @@
                                         <DataTrigger Binding="{Binding Settings.TC_Slip_Str}" Value="N/A">
                                             <Setter Property="Fill" Value="Orange"/>
                                         </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.TC_Slip_Str}" Value="Linked">
+                                            <Setter Property="Fill" Value="Yellow"/>
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Ellipse.Style>
                         </Ellipse>
+
                         <TextBlock VerticalAlignment="Center" FontSize="11" FontStyle="Italic">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
@@ -139,13 +143,19 @@
                                             <Setter Property="Text" Value="Not available for this car"/>
                                             <Setter Property="Foreground" Value="Orange"/>
                                         </DataTrigger>
+                                        <DataTrigger Binding="{Binding Settings.TC_Slip_Str}" Value="Linked">
+                                            <Setter Property="Text" Value="Linked with TC_Main (LMP2/LMP3)"/>
+                                            <Setter Property="Foreground" Value="Yellow"/>
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
                     </StackPanel>
+
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipIncrease" FriendlyName="TC Slip +"/>
                     <ui:ControlsEditor ActionName="LMUElectronicBridge.TC_SlipDecrease" FriendlyName="TC Slip -"/>
+
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBlock Text="{Binding Settings.TC_Slip}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Settings.TC_Slip_Str, StringFormat=' ({0})'}" FontSize="18" Foreground="#00FF00" FontWeight="Bold"/>
