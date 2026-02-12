@@ -144,7 +144,7 @@
                                             <Setter Property="Foreground" Value="Orange"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Settings.TC_Slip_Str}" Value="Linked">
-                                            <Setter Property="Text" Value="Linked with TC_Main (LMP2/LMP3)"/>
+                                            <Setter Property="Text" Value="Linked with Traction Control (Main) (LMP2/LMP3)"/>
                                             <Setter Property="Foreground" Value="Yellow"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -262,7 +262,7 @@
                 </StackPanel>
             </styles:SHSection>
 
-            <styles:SHSection Title="HYBRID (REGEN &amp; MOTOR MAP)" ShowSeparator="True">
+            <styles:SHSection Title="HYBRID (REGEN &amp; Electric MOTOR MAP)" ShowSeparator="True">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                         <Ellipse Width="10" Height="10" Margin="0,0,10,0" VerticalAlignment="Center">

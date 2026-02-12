@@ -189,7 +189,7 @@ namespace LMUElectronicBridge
                     else
                     {
                         // Feature aktiv (Hybrid), aber API liefert keinen Text -> Nutze Lookups
-                        UpdateStringProp(prop.Name, val, attr.TableName);
+                        UpdateStringProp(prop.Name, val, attr.TableName, true);
                     }
                 }
 
@@ -256,62 +256,51 @@ namespace LMUElectronicBridge
                 typeof(ElectronicSettings).GetProperty("TC_Slip_Str")?.SetValue(Settings, "Linked");
             }
 
-            UpdateStringProp(prop.Name, newValue, tableName);
+            UpdateStringProp(prop.Name, newValue, tableName, false);
             OnPropertyChanged(nameof(Settings));
         }
 
         /// <summary>
         /// Updates the string representation of a setting.
-        /// Respects API "N/A" status and applies team-specific lookups.
+        /// forceUpdate = true: Overwrites everything (used for full syncs).
+        /// forceUpdate = false: Respects N/A and Linked blocks (used for button presses).
         /// </summary>
-        private void UpdateStringProp(string baseName, int val, string tableName)
+        private void UpdateStringProp(string baseName, int val, string tableName, bool forceUpdate = false)
         {
             var strProp = typeof(ElectronicSettings).GetProperty(baseName + "_Str");
             if (strProp == null) return;
 
-            // Check current string value from Settings
-            // If the API previously set this to "N/A", this functionalty is for the current car not available
-            object currentObj = strProp.GetValue(Settings);
-            string currentStr = currentObj != null ? currentObj.ToString() : string.Empty;
 
+            // 2. Protection Guard
+            if (!forceUpdate)
+            {
+                object currentObj = strProp.GetValue(Settings);
+                string currentStr = currentObj?.ToString() ?? string.Empty;
+
+                // If it's a button press, don't let it change a special state
+                if (currentStr == "Linked" || currentStr == "N/A")
+                {
+                    return;
+                }
+            }
+
+            // 3. Normal Lookup Logic
             IReadOnlyList<string> table = null;
             var profile = Settings.ActiveTeamProfile;
 
-            // Map table names to the active team profile lists
             if (profile != null && tableName != null)
             {
                 switch (tableName)
                 {
-                    case "ARB":
-                        table = baseName.Contains("Front") ? profile.FrontARB : profile.RearARB;
-                        break;
-                    case "Regen":
-                        table = profile.RegenLevels;
-                        break;
-                    case "MotorMap":
-                        table = profile.ElectronicMotorMaps;
-                        break;
-                    case "BrakeMigration":
-                        table = profile.BrakeMigration;
-                        break;
-                    case "EngineMixture":
-                        table = profile.EngineMixture;
-                        break;
+                    case "ARB": table = baseName.Contains("Front") ? profile.FrontARB : profile.RearARB; break;
+                    case "Regen": table = profile.RegenLevels; break;
+                    case "MotorMap": table = profile.ElectronicMotorMaps; break;
+                    case "BrakeMigration": table = profile.BrakeMigration; break;
+                    case "EngineMixture": table = profile.EngineMixture; break;
                 }
             }
 
-            // Determine the final display string
-            string displayValue;
-            if (table != null)
-            {
-                // Use team-specific lookup table
-                displayValue = Lookup(table, val);
-            }
-            else
-            {
-                // Fallback: Use "Off" for 0, otherwise show raw number
-                displayValue = (val == 0) ? "Off" : val.ToString();
-            }
+            string displayValue = (table != null) ? Lookup(table, val) : (val == 0 ? "Off" : val.ToString());
 
             strProp.SetValue(Settings, displayValue);
         }
