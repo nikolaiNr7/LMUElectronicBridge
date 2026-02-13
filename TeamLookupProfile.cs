@@ -251,6 +251,7 @@ namespace LMUElectronicBridge
             public static readonly HashSet<string> LMU_NO_MGU_HYPER = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Aston Martin THOR Team",
+                "AM Valkyrie Custom Team",
                 "Glickenhaus Racing",
             };
 
@@ -259,6 +260,7 @@ namespace LMUElectronicBridge
             {
                 { "Alpine Endurance Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15", "P16" } },
                 { "Aston Martin THOR Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11" } },
+                { "AM Valkyrie Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11" } },
                 { "BMW M Team WRT", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
                 { "Action Express Racing", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
                 { "Cadillac Racing", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
@@ -277,6 +279,7 @@ namespace LMUElectronicBridge
             {
                 { "Alpine Endurance Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" } },
                 { "Aston Martin THOR Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11" } },
+                { "AM Valkyrie Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11" } },
                 { "BMW M Team WRT", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
                 { "Action Express Racing", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
                 { "Cadillac Racing", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
