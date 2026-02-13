@@ -91,6 +91,9 @@ namespace LMUElectronicBridge
             // Update Car Class Status
             Settings.IsHypercar = IsHypercarClass(data.NewData.CarClass);
 
+            // Continuously update vehicle status (team info and damage) from the API
+            _ = UpdateVehicleStatusAsync();
+
             bool triggerSync = false;
 
             // 1. First Load Sync
@@ -136,24 +139,66 @@ namespace LMUElectronicBridge
         }
 
 
-        //########### APY Sync Logic ##################################################################
+        //########### API Sync Logic ##################################################################
 
         /// <summary>
-        /// Asynchronously fetches team and garage data from the LMU API and updates all relevant settings.
+        /// Asynchronously updates vehicle status data from the API.
+        /// Includes team information, suspension damage, and aerodynamic damage.
+        /// Called continuously during DataUpdate to keep real-time values current.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task SyncAllFromLMU()
+        private async Task UpdateVehicleStatusAsync()
         {
-            JToken teamData = await _apiClient.GetTeamInfoAsync();
+            JObject vehicleData = await _apiClient.GetVehicleStatusDataAsync();
+            if (vehicleData == null) return;
+
+            // Parse suspension damage array [FL, FR, RL, RR]
+            JArray suspensionArray = vehicleData["suspensionDamage"] as JArray;
+            if (suspensionArray != null && suspensionArray.Count == 4)
+            {
+                Settings.SuspensionDamage_FL = suspensionArray[0]?.Value<double>() ?? -1.0;
+                Settings.SuspensionDamage_FR = suspensionArray[1]?.Value<double>() ?? -1.0;
+                Settings.SuspensionDamage_RL = suspensionArray[2]?.Value<double>() ?? -1.0;
+                Settings.SuspensionDamage_RR = suspensionArray[3]?.Value<double>() ?? -1.0;
+
+                // Calculate average suspension damage
+                Settings.SuspensionDamage_Avg = (Settings.SuspensionDamage_FL +
+                                                  Settings.SuspensionDamage_FR +
+                                                  Settings.SuspensionDamage_RL +
+                                                  Settings.SuspensionDamage_RR) / 4.0;
+            }
+
+            // Parse aero damage
+            Settings.AeroDamage = vehicleData["aeroDamage"]?.Value<double>() ?? -1.0;
+
+            // Parse team information
+            JToken teamData = vehicleData["teamInfo"];
             if (teamData != null)
             {
                 Settings.TeamName = teamData["teamName"]?.ToString() ?? STATUS_NA;
                 Settings.VehicleName = teamData["vehicleName"]?.ToString() ?? STATUS_NA;
-                Settings.ActiveTeamProfile = new TeamLookupProfile(Settings.TeamName);
             }
 
+            // Notify SimHub of property changes
+            OnPropertyChanged(nameof(Settings));
+        }
+
+        /// <summary>
+        /// Asynchronously fetches garage data from the LMU API and updates electronic settings.
+        /// Team info and damage data are handled by UpdateDamageDataAsync() in the main loop.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task SyncAllFromLMU()
+        {
+            // Fetch garage data for electronic settings only
             JObject json = await _apiClient.GetRawGarageDataAsync();
             if (json == null) return;
+
+            // Update team lookup profile if team name is available
+            if (!string.IsNullOrEmpty(Settings.TeamName) && Settings.TeamName != STATUS_NA)
+            {
+                Settings.ActiveTeamProfile = new TeamLookupProfile(Settings.TeamName);
+            }
 
             foreach (var prop in _propCache.Values)
             {
@@ -259,9 +304,19 @@ namespace LMUElectronicBridge
         /// </summary>
         private void AutoRegister()
         {
+            // Register team information properties
             this.AttachDelegate("teamInfo.teamName", () => Settings.TeamName);
             this.AttachDelegate("teamInfo.vehicleName", () => Settings.VehicleName);
 
+            // Register damage and wear properties
+            this.AttachDelegate("Damage.SuspensionDamageFrontLeft", () => Settings.SuspensionDamage_FL);
+            this.AttachDelegate("Damage.SuspensionDamageFrontRight", () => Settings.SuspensionDamage_FR);
+            this.AttachDelegate("Damage.SuspensionDamageRearLeft", () => Settings.SuspensionDamage_RL);
+            this.AttachDelegate("Damage.SuspensionDamageRearRight", () => Settings.SuspensionDamage_RR);
+            this.AttachDelegate("Damage.SuspensionDamageAverage", () => Settings.SuspensionDamage_Avg);
+            this.AttachDelegate("Damage.AeroDamage", () => Settings.AeroDamage);
+
+            // Register electronic settings properties and actions
             foreach (var prop in _propCache.Values)
             {
                 var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();

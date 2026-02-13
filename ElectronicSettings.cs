@@ -107,6 +107,40 @@ namespace LMUElectronicBridge
         public int RearARB_Max { get; internal set; } = 0;
         public int RearARB_Min { get; internal set; } = 0;
 
+
+        // ---- DAMAGE & WEAR --------------------------------------------------
+
+        /// <summary>
+        /// Front-left suspension damage/wear (0.0 = no damage, 1.0 = maximum damage).
+        /// </summary>
+        public double SuspensionDamage_FL { get; internal set; } = -1.0;
+
+        /// <summary>
+        /// Front-right suspension damage/wear (0.0 = no damage, 1.0 = maximum damage).
+        /// </summary>
+        public double SuspensionDamage_FR { get; internal set; } = -1.0;
+
+        /// <summary>
+        /// Rear-left suspension damage/wear (0.0 = no damage, 1.0 = maximum damage).
+        /// </summary>
+        public double SuspensionDamage_RL { get; internal set; } = -1.0;
+
+        /// <summary>
+        /// Rear-right suspension damage/wear (0.0 = no damage, 1.0 = maximum damage).
+        /// </summary>
+        public double SuspensionDamage_RR { get; internal set; } = -1.0;
+
+        /// <summary>
+        /// Average suspension damage across all four corners (0.0 = no damage, 1.0 = maximum damage).
+        /// </summary>
+        public double SuspensionDamage_Avg { get; internal set; } = -1.0;
+
+        /// <summary>
+        /// Aerodynamic damage (0.0 = no damage, 1.0 = maximum damage).
+        /// </summary>
+        public double AeroDamage { get; internal set; } = -1.0;
+
+
         // ---- TEAM INFO ------------------------------------------------------
         public string TeamName { get; internal set; } = "";
         public string VehicleName { get; internal set; } = "";
