@@ -15,6 +15,7 @@ namespace LMUElectronicBridge
         private const string BaseUrl = "http://localhost:6397";
 
         //----- API Methods --------------------------------------------------
+
         /// <summary>
         /// Fetches the full garage JSON from LMU.
         /// </summary>
@@ -35,25 +36,31 @@ namespace LMUElectronicBridge
             }
         }
 
-
         /// <summary>
-        /// Fetches team and vehicle information from the TireManagement endpoint.
-        /// Returns only the nested teamInfo object.
+        /// Fetches vehicle status data from the TireManagement endpoint.
+        /// Includes team information, suspension wear, and aerodynamic damage.
         /// </summary>
-        /// <returns>The teamInfo JToken, or null if not found or request fails.</returns>
-        public async Task<JToken> GetTeamInfoAsync()
+        /// <returns>A JObject containing teamInfo, wearables.suspension, and wearables.body.aero, or null if the request fails.</returns>
+        public async Task<JObject> GetVehicleStatusDataAsync()
         {
             try
             {
                 string json = await _client.GetStringAsync(BaseUrl + "/rest/garage/UIScreen/TireManagement");
                 JObject root = JObject.Parse(json);
 
-                // We just want the teamInfo node so strip rest
-                return root["teamInfo"];
+                // Extract the relevant data sections
+                var vehicleStatusData = new JObject
+                {
+                    ["teamInfo"] = root["teamInfo"],
+                    ["suspensionDamage"] = root["wearables"]?["suspension"],
+                    ["aeroDamage"] = root["wearables"]?["body"]?["aero"]
+                };
+
+                return vehicleStatusData;
             }
             catch (Exception ex)
             {
-                SimHub.Logging.Current.Error($"LMU Team Info API Connection Failed: {ex.Message}");
+                SimHub.Logging.Current.Error($"LMU Vehicle Status API Connection Failed: {ex.Message}");
                 return null;
             }
         }
