@@ -103,14 +103,22 @@ namespace LMUElectronicBridge
         // ---------------- Helper Methods ----------------
 
         /// <summary>
-        /// Normalizes a team name by stripping trailing year (e.g., "Team X 2024" -> "Team X").
+        /// Normalizes a team/vehicle name by stripping trailing year and car number 
+        /// (e.g., "VLMDH Custom Team 2024 #397" -> "VLMDH Custom Team").
         /// </summary>
-        /// <param name="teamName">Raw team name.</param>
-        /// <returns>Normalized team name without year.</returns>
+        /// <param name="teamName">Raw team or vehicle name.</param>
+        /// <returns>Normalized name without year and car number.</returns>
         private static string NormalizeTeamName(string teamName)
         {
             if (string.IsNullOrWhiteSpace(teamName)) return string.Empty;
-            return Regex.Replace(teamName.Trim(), @"\s20\d{2}$", "").Trim();
+
+            // Remove year (e.g., " 2024")
+            string normalized = Regex.Replace(teamName.Trim(), @"\s20\d{2}", "");
+
+            // Remove car number (e.g., " #397" or " #1")
+            normalized = Regex.Replace(normalized, @"\s#\d+", "");
+
+            return normalized.Trim();
         }
 
         /// <summary>
