@@ -200,7 +200,7 @@ namespace LMUElectronicBridge
             if (json == null) return;
 
             // Update team lookup profile if team name is available
-            if (!string.IsNullOrEmpty(Settings.TeamName) && Settings.TeamName != STATUS_NA)
+            if (!string.IsNullOrEmpty(Settings.VehicleName) && Settings.VehicleName != STATUS_NA)
             {
                 Settings.ActiveTeamProfile = new TeamLookupProfile(Settings.VehicleName);
             }

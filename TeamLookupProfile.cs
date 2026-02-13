@@ -97,75 +97,78 @@ namespace LMUElectronicBridge
         {
             RawTeamName = teamName ?? string.Empty;
             NormalizedTeamName = NormalizeTeamName(RawTeamName);
-            CarClass = ResolveCarClass(RawTeamName);
+            CarClass = ResolveCarClass(NormalizedTeamName);
         }
 
         // ---------------- Helper Methods ----------------
-
         /// <summary>
-        /// Normalizes a team/vehicle name by stripping trailing year and car number 
+        /// Normalizes a team/vehicle name by stripping trailing year and everything after # 
+        /// (e.g., "Ferrari AF Corse 2025 #50:LM" -> "Ferrari AF Corse").
         /// (e.g., "VLMDH Custom Team 2024 #397" -> "VLMDH Custom Team").
         /// </summary>
         /// <param name="teamName">Raw team or vehicle name.</param>
-        /// <returns>Normalized name without year and car number.</returns>
+        /// <returns>Normalized name without year and car identifier.</returns>
         private static string NormalizeTeamName(string teamName)
         {
             if (string.IsNullOrWhiteSpace(teamName)) return string.Empty;
 
-            // Remove year (e.g., " 2024")
-            string normalized = Regex.Replace(teamName.Trim(), @"\s20\d{2}", "");
+            string normalized = teamName.Trim();
 
-            // Remove car number (e.g., " #397" or " #1")
-            normalized = Regex.Replace(normalized, @"\s#\d+", "");
+            // Remove everything from # onwards (e.g., " #50:LM", " #397", " #1")
+            int hashIndex = normalized.IndexOf('#');
+            if (hashIndex >= 0)
+            {
+                normalized = normalized.Substring(0, hashIndex).Trim();
+            }
+
+            // Remove year (e.g., " 2024", " 2025")
+            normalized = Regex.Replace(normalized, @"\s20\d{2}", "");
 
             return normalized.Trim();
         }
 
         /// <summary>
         /// Determines the car class of a team based on lookup sets.
+        /// Uses normalized name for matching (without year and car number).
         /// </summary>
-        /// <param name="teamName">Raw or year-stripped team name.</param>
+        /// <param name="teamName">Normalized team name.</param>
         /// <returns>CarClass enum value.</returns>
         private static CarClass ResolveCarClass(string teamName)
         {
+            if (string.IsNullOrWhiteSpace(teamName)) return CarClass.Unknown;
+
             if (TeamMappings.LMU_LMDH.Contains(teamName)) return CarClass.LMDH;
             if (TeamMappings.LMU_LMH.Contains(teamName)) return CarClass.LMH;
-            if(TeamMappings.LMU_NO_MGU_HYPER.Contains(teamName)) return CarClass.LMU_NO_MGU_HYPER;
+            if (TeamMappings.LMU_NO_MGU_HYPER.Contains(teamName)) return CarClass.LMU_NO_MGU_HYPER;
             return CarClass.Unknown;
         }
 
         /// <summary>
         /// Resolves ARB list for front or rear suspension.
-        /// Uses exact team match, year-stripped match, or shared defaults if necessary.
+        /// Uses normalized team name for matching against the ARB maps or shared defaults.
         /// </summary>
         /// <param name="arbMap">Dictionary mapping team names to ARB setups.</param>
         /// <returns>List of ARB positions/settings.</returns>
         private IReadOnlyList<string> ResolveARB(Dictionary<string, List<string>> arbMap)
         {
-            // 1. get Exact Match in der Map
-            if (arbMap.TryGetValue(RawTeamName, out var direct)) return direct;
+            // 1. Try direct match with normalized name (most efficient)
+            if (arbMap.TryGetValue(NormalizedTeamName, out var direct))
+                return direct;
 
-            // 2. Search for Year-Stripped Match in der Map
-            var normMatch = arbMap.FirstOrDefault(k =>
-                NormalizeTeamName(k.Key).Equals(NormalizedTeamName, StringComparison.OrdinalIgnoreCase));
-            if (!string.IsNullOrEmpty(normMatch.Key)) return normMatch.Value;
+            // 2. Try case-insensitive match with normalized name
+            var match = arbMap.FirstOrDefault(kvp =>
+                kvp.Key.Equals(NormalizedTeamName, StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrEmpty(match.Key))
+                return match.Value;
 
-            // 3.Finde Shared Default Values
-            bool isShared = false;
-            foreach (var team in TeamMappings.SharedTeams)
-            {
-                if (team.Equals(NormalizedTeamName, StringComparison.OrdinalIgnoreCase))
-                {
-                    isShared = true;
-                    break;
-                }
-            }
-
-            if (isShared)
+            // 3. Check if team uses shared default values
+            if (TeamMappings.SharedTeams.Any(team =>
+                team.Equals(NormalizedTeamName, StringComparison.OrdinalIgnoreCase)))
             {
                 return TeamMappings.SharedAntisway.ToList();
             }
 
+            // 4. No match found - return N/A
             return new List<string> { "N/A" };
         }
 
@@ -203,9 +206,11 @@ namespace LMUElectronicBridge
         /// <returns>List of brake migration stages as strings.</returns>
         private IReadOnlyList<string> ResolveBrakeMigration()
         {
-            // Applies to both LMDH and LMH cars
-            if (TeamMappings.LMU_LMDH.Contains(RawTeamName) || TeamMappings.LMU_LMH.Contains(RawTeamName) || TeamMappings.LMU_NO_MGU_HYPER.Contains(RawTeamName))
-                return new List<string> { "2.5% F", "2.0% F", "1.5% F", "1.0% F", "0.5% F", "Disabled" };
+            // Applies to both LMDH and LMH cars - use normalized name for matching
+            if (TeamMappings.LMU_LMDH.Contains(NormalizedTeamName) ||
+                TeamMappings.LMU_LMH.Contains(NormalizedTeamName) ||
+                TeamMappings.LMU_NO_MGU_HYPER.Contains(NormalizedTeamName))
+                return new List<string> { "2.5%F", "2.0%F", "1.5%F", "1.0%F", "0.5%F", "Disabled" };
 
             // Default for unknown cars that do not support brake migration
             return new List<string> { "N/A", "N/A" };
