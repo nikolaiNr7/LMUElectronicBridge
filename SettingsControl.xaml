@@ -6,37 +6,43 @@
 
     <ScrollViewer Background="#111111">
         <StackPanel Margin="15">
-
             <styles:SHSection Title="PLUGIN VERSION" ShowSeparator="True">
                 <StackPanel>
+                    <!-- Condensed version info in one row -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <TextBlock Text="Current Version: " Foreground="Gray" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding Settings.CurrentVersion}" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <TextBlock Text="Current: " Foreground="Gray" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Settings.CurrentVersion}" Foreground="White" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                        <TextBlock Text="Latest: " Foreground="Gray" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Settings.LatestVersion}" Foreground="White" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,15,0"/>
+
+                        <!-- Update indicator -->
+                        <Ellipse Width="12" Height="12" Fill="Orange" Margin="0,0,8,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.UpdateAvailable}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock Text="Update Available!" Foreground="Orange" FontWeight="Bold" FontSize="12" VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Settings.UpdateAvailable}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <TextBlock Text="Latest Version: " Foreground="Gray" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding Settings.LatestVersion}" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <!-- Update Available Indicator -->
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Settings.UpdateAvailable}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-
-                        <Ellipse Width="15" Height="15" Fill="Orange" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Update Available!" Foreground="Orange" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <!-- Download Button -->
+                    <!-- Download Button (only visible when update available) -->
                     <Button Content="DOWNLOAD LATEST VERSION" 
                 Click="DownloadUpdate_Click"
                 Height="35" 
