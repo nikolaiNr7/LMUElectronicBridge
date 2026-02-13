@@ -186,7 +186,7 @@ namespace LMUElectronicBridge
             if (CarClass == CarClass.LMH)
                 return new List<string> { "Off", "20kW", "40kW", "60kW", "80kW", "100kW", "120kW", "140kW", "160kW", "180kW", "200kW" };
             // Default for unknown cars that do not support electric motor maps
-            return new List<string> { "N/A", "N/A" };
+            return new List<string> { "Safty-Car", "Race" };
         }
 
         /// <summary>
