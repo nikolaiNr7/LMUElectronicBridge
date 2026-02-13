@@ -213,28 +213,37 @@ namespace LMUElectronicBridge
             public static readonly string[] SharedTeams =
             {
                 "Glickenhaus Racing",
+                "Glickenhaus Custom Team",
                 "Peugeot TotalEnergies",
+                "9x8 Wing Custom Team",
                 "Hertz Team Jota",
                 "Porsche Penske Motorsport",
+                "Porsche 963 Custom Team",
                 "Proton Competition",
-                "Toyota Gazoo Racing"
+                "Toyota Gazoo Racing",
+                "Toyota GR010 Custom Team"
             };
 
             // Teams categorized as LMDH
             public static readonly HashSet<string> LMU_LMDH = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Alpine Endurance Team",
+                "Alpine Custom Team",
                 "BMW M Team WRT",
+                "BMWMH Custom Team",
                 "Action Express Racing",
                 "Cadillac Racing",
                 "Whelen Cadillac Racing",
                 "Cadillac Hertz Team Jota",
                 "Cadillac Whelen",
                 "Cadillac WTR",
+                "VLMDH Custom Team",
                 "Hertz Team Jota",
                 "Porsche Penske Motorsport",
+                "Porsche 963 Custom Team",
                 "Proton Competition",
-                "Lamborghini Iron Lynx"
+                "Lamborghini Iron Lynx",
+                "SC63 Custom Team"
             };
 
             // Teams categorized as LMH
@@ -242,9 +251,13 @@ namespace LMUElectronicBridge
             {
                 "Ferrari AF Corse",
                 "AF Corse",
+                "499P Custom Team",
                 "Peugeot TotalEnergies",
+                "9x8 Wing Custom Team",
                 "Toyota Gazoo Racing",
-                "Isotta TIPO6"
+                "Toyota GR010 Custom Team",
+                "Isotta TIPO6",
+                "Isotta Fraschini Custom Team"
             };
 
             // Teams categorized as non-hybrid Hypercars and use fore Brake Migration
@@ -253,8 +266,8 @@ namespace LMUElectronicBridge
                 "Aston Martin THOR Team",
                 "AM Valkyrie Custom Team",
                 "Glickenhaus Racing",
+                "Glickenhaus Custom Team"
             };
-
             // Front ARB mappings per team
             public static readonly Dictionary<string, List<string>> FrontARBMap = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
             {
@@ -271,7 +284,17 @@ namespace LMUElectronicBridge
                 { "Ferrari AF Corse", new List<string> { "Detached", "A-P1", "A-P2", "A-P3", "A-P4", "A-P5", "B-P1", "B-P2", "B-P3", "B-P4", "B-P5", "C-P1", "C-P2", "C-P3", "C-P4", "C-P5", "D-P1", "D-P2", "D-P3", "D-P4", "D-P5", "E-P1", "E-P2", "E-P3", "E-P4", "E-P5" } },
                 { "AF Corse", new List<string> { "Detached", "A-P1", "A-P2", "A-P3", "A-P4", "A-P5", "B-P1", "B-P2", "B-P3", "B-P4", "B-P5", "C-P1", "C-P2", "C-P3", "C-P4", "C-P5", "D-P1", "D-P2", "D-P3", "D-P4", "D-P5", "E-P1", "E-P2", "E-P3", "E-P4", "E-P5" } },
                 { "Lamborghini Iron Lynx", new List<string> { "Detached", "14.5-TK 0deg", "14.5-TK 30deg", "14.5-TK 45deg", "14.5-TK 60deg", "14.5-TK 90deg", "16-TK 0deg", "16-TK 30deg", "16-TK 45deg", "16-TK 60deg", "16-TK 90deg", "17.5-TK 0deg", "17.5-TK 30deg", "17.5-TK 45deg", "17.5-TK 60deg", "17.5-TK 90deg", "20.5-TK 0deg", "20.5-TK 30deg", "20.5-TK 45deg", "20.5-TK 60deg", "20.5-TK 90deg" } },
-                { "Isotta TIPO6", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7" } }
+                { "Isotta TIPO6", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7" } },
+                { "Alpine Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15", "P16" } },
+                { "BMWMH Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
+                { "VLMDH Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
+                { "Porsche 963 Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
+                { "SC63 Custom Team", new List<string> { "Detached", "14.5-TK 0deg", "14.5-TK 30deg", "14.5-TK 45deg", "14.5-TK 60deg", "14.5-TK 90deg", "16-TK 0deg", "16-TK 30deg", "16-TK 45deg", "16-TK 60deg", "16-TK 90deg", "17.5-TK 0deg", "17.5-TK 30deg", "17.5-TK 45deg", "17.5-TK 60deg", "17.5-TK 90deg", "20.5-TK 0deg", "20.5-TK 30deg", "20.5-TK 45deg", "20.5-TK 60deg", "20.5-TK 90deg" } },
+                { "499P Custom Team", new List<string> { "Detached", "A-P1", "A-P2", "A-P3", "A-P4", "A-P5", "B-P1", "B-P2", "B-P3", "B-P4", "B-P5", "C-P1", "C-P2", "C-P3", "C-P4", "C-P5", "D-P1", "D-P2", "D-P3", "D-P4", "D-P5", "E-P1", "E-P2", "E-P3", "E-P4", "E-P5" } },
+                { "9x8 Wing Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
+                { "Toyota GR010 Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
+                { "Glickenhaus Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
+                { "Isotta Fraschini Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7" } }
             };
 
             // Rear ARB mappings per team
@@ -290,7 +313,17 @@ namespace LMUElectronicBridge
                 { "Ferrari AF Corse", new List<string> { "Detached", "A-P1", "A-P2", "A-P3", "A-P4", "A-P5", "B-P1", "B-P2", "B-P3", "B-P4", "B-P5", "C-P1", "C-P2", "C-P3", "C-P4", "C-P5", "D-P1", "D-P2", "D-P3", "D-P4", "D-P5", "E-P1", "E-P2", "E-P3", "E-P4", "E-P5" } },
                 { "AF Corse", new List<string> { "Detached", "A-P1", "A-P2", "A-P3", "A-P4", "A-P5", "B-P1", "B-P2", "B-P3", "B-P4", "B-P5", "C-P1", "C-P2", "C-P3", "C-P4", "C-P5", "D-P1", "D-P2", "D-P3", "D-P4", "D-P5", "E-P1", "E-P2", "E-P3", "E-P4", "E-P5" } },
                 { "Lamborghini Iron Lynx", new List<string> { "Detached", "14.5-TN 0deg", "14.5-TN 30deg", "14.5-TN 60deg", "14.5-TN 90deg", "16-TK 0deg", "16-TK 30deg", "16-TK 60deg", "16-TK 90deg", "17.5-TK 0deg", "17.5-TK 30deg", "17.5-TK 60deg", "17.5-TK 90deg", "20.5-TK 0deg", "20.5-TK 30deg", "20.5-TK 60deg", "20.5-TK 90deg" } },
-                { "Isotta TIPO6", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7" } }
+                { "Isotta TIPO6", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7" } },
+                { "Alpine Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" } },
+                { "BMWMH Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
+                { "VLMDH Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
+                { "Porsche 963 Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
+                { "SC63 Custom Team", new List<string> { "Detached", "14.5-TN 0deg", "14.5-TN 30deg", "14.5-TN 60deg", "14.5-TN 90deg", "16-TK 0deg", "16-TK 30deg", "16-TK 60deg", "16-TK 90deg", "17.5-TK 0deg", "17.5-TK 30deg", "17.5-TK 60deg", "17.5-TK 90deg", "20.5-TK 0deg", "20.5-TK 30deg", "20.5-TK 60deg", "20.5-TK 90deg" } },
+                { "499P Custom Team", new List<string> { "Detached", "A-P1", "A-P2", "A-P3", "A-P4", "A-P5", "B-P1", "B-P2", "B-P3", "B-P4", "B-P5", "C-P1", "C-P2", "C-P3", "C-P4", "C-P5", "D-P1", "D-P2", "D-P3", "D-P4", "D-P5", "E-P1", "E-P2", "E-P3", "E-P4", "E-P5" } },
+                { "9x8 Wing Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
+                { "Toyota GR010 Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
+                { "Glickenhaus Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
+                { "Isotta Fraschini Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7" } }
             };
         }
     }
