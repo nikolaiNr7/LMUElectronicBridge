@@ -9,9 +9,10 @@ using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Linq;
 using System.Windows.Media;
 
 namespace LMUElectronicBridge
@@ -34,6 +35,7 @@ namespace LMUElectronicBridge
         private const int LMU_MAX_VALUE_OFFSET = 1;
         private const string STATUS_NA = "N/A";
         private const string STATUS_LINKED = "Linked";
+
 
         //----- State Tracking for resync get Garage Values ------------------
         private string lastSessionType = "";
@@ -71,6 +73,9 @@ namespace LMUElectronicBridge
 
             AutoRegister();
             this.AddAction("SyncFromGame", (a, b) => { _ = SyncAllFromLMU(); });
+
+            // Check for updates on startup
+            _ = CheckForUpdatesAsync();
         }
 
         //########### Core Data Loop #####################################################
@@ -267,6 +272,72 @@ namespace LMUElectronicBridge
 
             // 4. Fallback: Custom Lookups
             UpdateStringProp(baseName, val, tableName);
+        }
+
+        private async Task CheckForUpdatesAsync()
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("User-Agent", "LMU-Electronic-Bridge");
+                    client.Timeout = TimeSpan.FromSeconds(5);
+
+                    string response = await client.GetStringAsync(ElectronicSettings.GITHUB_API_URL);
+
+                    // Parse JSON response
+                    JObject release = JObject.Parse(response);
+                    string latestVersion = release["tag_name"]?.ToString().TrimStart('v'); // Remove 'v' prefix if present
+
+                    Settings.LatestVersion = latestVersion ?? "Unknown";
+
+                    // Compare versions
+                    if (!string.IsNullOrEmpty(latestVersion) && IsNewerVersion(latestVersion, Settings.CurrentVersion))
+                    {
+                        Settings.UpdateAvailable = true;
+                        SimHub.Logging.Current.Info($"LMU Electronic Bridge: Update available! Current: {Settings.CurrentVersion}, Latest: {latestVersion}");
+                    }
+                    else
+                    {
+                        Settings.UpdateAvailable = false;
+                        SimHub.Logging.Current.Info($"LMU Electronic Bridge: You are using the latest version ({Settings.CurrentVersion})");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Settings.LatestVersion = "Check Failed";
+                SimHub.Logging.Current.Error($"LMU Electronic Bridge: Version check failed: {ex.Message}");
+            }
+
+            OnPropertyChanged(nameof(Settings));
+        }
+
+        /// <summary>
+        /// Compares two semantic version strings (e.g., "1.2.3" vs "1.2.4").
+        /// </summary>
+        /// <param name="latest">The latest version string.</param>
+        /// <param name="current">The current version string.</param>
+        /// <returns>True if latest is newer than current.</returns>
+        private bool IsNewerVersion(string latest, string current)
+        {
+            try
+            {
+                var latestParts = latest.Split('.').Select(int.Parse).ToArray();
+                var currentParts = current.Split('.').Select(int.Parse).ToArray();
+
+                for (int i = 0; i < Math.Min(latestParts.Length, currentParts.Length); i++)
+                {
+                    if (latestParts[i] > currentParts[i]) return true;
+                    if (latestParts[i] < currentParts[i]) return false;
+                }
+
+                return latestParts.Length > currentParts.Length;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         //########### Helper Functions ##################################################################

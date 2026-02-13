@@ -16,13 +16,13 @@ namespace LMUElectronicBridge
         {
             InitializeComponent();
             Plugin = plugin;
-
             // Setting the DataContext to the plugin instance allows for 
             // WPF Bindings to work (e.g., {Binding Settings.TC_Main})
             DataContext = plugin;
         }
 
         //----- UI Event Handlers --------------------------------------------
+
         /// <summary>
         /// Triggered by the "FORCE SYNC FROM GARAGE" button in the UI.
         /// </summary>
@@ -30,6 +30,22 @@ namespace LMUElectronicBridge
         {
             // Firing the async sync method without awaiting to keep the UI responsive
             _ = Plugin.SyncAllFromLMU();
+        }
+
+        /// <summary>
+        /// Triggered by the "DOWNLOAD LATEST VERSION" button in the UI.
+        /// Opens the GitHub releases page in the default browser.
+        /// </summary>
+        private void DownloadUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(ElectronicSettings.GITHUB_RELEASES_URL);
+            }
+            catch (System.Exception ex)
+            {
+                SimHub.Logging.Current.Error($"LMU Electronic Bridge: Failed to open update URL: {ex.Message}");
+            }
         }
     }
 }

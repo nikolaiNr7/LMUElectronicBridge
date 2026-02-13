@@ -149,6 +149,34 @@ namespace LMUElectronicBridge
         public TeamLookupProfile ActiveTeamProfile { get; internal set; }
 
 
+        // ---- VERSION INFO ---------------------------------------------------
+        /// <summary>
+        /// Current plugin version.
+        /// </summary>
+        public string CurrentVersion { get; internal set; } = "1.1.0"; // Update this with each release
+
+        /// <summary>
+        /// Latest available version from GitHub.
+        /// </summary>
+        public string LatestVersion { get; internal set; } = "Checking...";
+
+        /// <summary>
+        /// Whether an update is available.
+        /// </summary>
+        public bool UpdateAvailable { get; internal set; } = false;
+        //----- Constants for GitHub Integration -------------------------
+
+        /// <summary>
+        /// GitHub API endpoint for checking latest release version.
+        /// </summary>
+        public const string GITHUB_API_URL = "https://api.github.com/repos/nikolaiNr7/LMU-Electronic-Bridge-Release/releases/latest";
+
+        /// <summary>
+        /// GitHub releases page URL for users to download updates.
+        /// </summary>
+        public const string GITHUB_RELEASES_URL = "https://github.com/nikolaiNr7/LMU-Electronic-Bridge-Release/releases/latest";
+
+
         // ---- GLOBAL PLUGIN SETTINGS -----------------------------------------
 
         /// <summary>
