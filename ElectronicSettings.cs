@@ -38,7 +38,7 @@ namespace LMUElectronicBridge
         /// <summary>
         /// Current plugin version.
         /// </summary>
-        public string CurrentVersion { get; internal set; } = "1.2.0"; // Update this with each release
+        public string CurrentVersion { get; internal set; } = "1.2.1"; // Update this with each release
 
         /// <summary>
         /// Latest available version from GitHub.

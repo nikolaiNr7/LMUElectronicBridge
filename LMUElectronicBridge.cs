@@ -87,12 +87,28 @@ namespace LMUElectronicBridge
         /// <param name="data">The current game data state.</param>
         public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
         {
-            if (data.NewData == null || !(pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate"))
+
+            // Guard: Exit if we're in a replay or the game isn't running
+            if (data.GameReplay || !data.GameRunning)
             {
-                ResetState();
-                return;
+              return;
             }
 
+            // Guard: Exit if data is invalid or game is wrong
+            bool isLmu = pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate";
+
+            if (data.NewData == null || !isLmu)
+            {
+                // Use _firstLoadSyncDone to check if we were previously connected.
+                // If it's true, it means the game just closed or changed.
+                if (_firstLoadSyncDone)
+                {
+                    ResetState(); // This clears your flags: _firstLoadSyncDone = false, etc.
+                    SimHub.Logging.Current.Info("LMU Bridge: Game closed or changed. State reset performed once.");
+                }
+                return;
+            }
+          
             // Update Car Class Status
             Settings.IsHypercar = IsHypercarClass(data.NewData.CarClass);
 
