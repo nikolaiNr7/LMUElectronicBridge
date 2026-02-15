@@ -31,6 +31,10 @@ namespace LMUElectronicBridge
         // Reflection Cache to boost performance
         private readonly Dictionary<string, PropertyInfo> _propCache = new Dictionary<string, PropertyInfo>();
 
+        //----- API Safe Guards ------------------------------------------------
+        private DateTime _lastFailedSync = DateTime.MinValue;
+        private int _failureCount = 0;
+
         //----- Constants ------------------------------------------------------
         private const int LMU_MAX_VALUE_OFFSET = 1;
         private const string STATUS_NA = "N/A";
@@ -88,12 +92,6 @@ namespace LMUElectronicBridge
         public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
         {
 
-            // Guard: Exit if we're in a replay or the game isn't running
-            if (data.GameReplay || !data.GameRunning)
-            {
-              return;
-            }
-
             // Guard: Exit if data is invalid or game is wrong
             bool isLmu = pluginManager.GameName == "LMU" || pluginManager.GameName == "LeMansUltimate";
 
@@ -104,12 +102,19 @@ namespace LMUElectronicBridge
                 if (_firstLoadSyncDone)
                 {
                     ResetState(); // This clears your flags: _firstLoadSyncDone = false, etc.
-                    SimHub.Logging.Current.Info("LMU Bridge: Game closed or changed. State reset performed once.");
+                    SimHub.Logging.Current.Info("[LMU Electronic Bridge]  Game closed or changed. State reset performed once.");
                 }
                 return;
             }
-          
-            // Update Car Class Status
+
+            //SOFT GUARDS: Replay, Menu, or API Cooldown
+            // We exit here to save CPU, but we don't ResetState so the UI keeps last values.
+            if (data.GameReplay || !data.GameRunning || data.GameInMenu || _apiClient.IsInCooldown)
+            {
+                return;
+            }
+
+                // Update Car Class Status
             Settings.IsHypercar = IsHypercarClass(data.NewData.CarClass);
 
             // Continuously update vehicle status (team info and damage) from the API
@@ -311,19 +316,19 @@ namespace LMUElectronicBridge
                     if (!string.IsNullOrEmpty(latestVersion) && IsNewerVersion(latestVersion, Settings.CurrentVersion))
                     {
                         Settings.UpdateAvailable = true;
-                        SimHub.Logging.Current.Info($"LMU Electronic Bridge: Update available! Current: {Settings.CurrentVersion}, Latest: {latestVersion}");
+                        SimHub.Logging.Current.Info($"[LMU Electronic Bridge] Update available! Current: {Settings.CurrentVersion}, Latest: {latestVersion}");
                     }
                     else
                     {
                         Settings.UpdateAvailable = false;
-                        SimHub.Logging.Current.Info($"LMU Electronic Bridge: You are using the latest version ({Settings.CurrentVersion})");
+                        SimHub.Logging.Current.Info($"[LMU Electronic Bridge] You are using the latest version ({Settings.CurrentVersion})");
                     }
                 }
             }
             catch (Exception ex)
             {
                 Settings.LatestVersion = "Check Failed";
-                SimHub.Logging.Current.Error($"LMU Electronic Bridge: Version check failed: {ex.Message}");
+                SimHub.Logging.Current.Error($"[LMU Electronic Bridge] Version check failed: {ex.Message}");
             }
 
             OnPropertyChanged(nameof(Settings));
