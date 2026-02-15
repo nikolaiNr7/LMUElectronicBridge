@@ -62,7 +62,7 @@ namespace LMUElectronicBridge
                 // Tier 2: Throttled Logging - Only log warnings for the first 3 failures
                 if (_consecutiveFailures <= 3)
                 {
-                    SimHub.Logging.Current.Warn($"[LMU Electronic Bridge]LMU API: Request to {endpoint} failed (Attempt {_consecutiveFailures}). This is common during game menus. Error: {ex.Message}");
+                    SimHub.Logging.Current.Warn($"[LMU Electronic Bridge]LMU API: Request to {endpoint} failed (Attempt {_consecutiveFailures}).\n Make sure LMU Game is running. Also you are in an active Session not in the Menu.\n Error: {ex.Message}");
                 }
 
                 return null;
@@ -77,15 +77,15 @@ namespace LMUElectronicBridge
         /// <returns>A JObject containing the garage data, or null if the request fails.</returns>
         public async Task<JObject> GetRawGarageDataAsync()
         {
-            string json = await GetAsyncSafe("/rest/garage/getPlayerGarageData");
-
+           
             try
             {
+                string json = await GetAsyncSafe("/rest/garage/getPlayerGarageData");
                 return json != null ? JObject.Parse(json) : null;
             }
             catch (Exception ex)
             {
-                SimHub.Logging.Current.Error($"[LMU Electronic Bridge] LMU API: Failed to parse Garage JSON: {ex.Message}");
+                SimHub.Logging.Current.Error($"[LMU Electronic Bridge] LMU API: Failed: {ex.Message}");
                 return null;
             }
         }
@@ -97,11 +97,10 @@ namespace LMUElectronicBridge
         /// <returns>A JObject containing teamInfo, suspension, and aero damage, or null if the request fails.</returns>
         public async Task<JObject> GetVehicleStatusDataAsync()
         {
-            string json = await GetAsyncSafe("/rest/garage/UIScreen/TireManagement");
-            if (json == null) return null;
-
             try
             {
+                string json = await GetAsyncSafe("/rest/garage/UIScreen/TireManagement");
+                if (json == null) return null;
                 JObject root = JObject.Parse(json);
 
                 // We reconstruct a smaller JObject to keep memory usage low and clarify the schema
@@ -114,7 +113,7 @@ namespace LMUElectronicBridge
             }
             catch (Exception ex)
             {
-                SimHub.Logging.Current.Error($"[LMU Electronic Bridge] LMU API: Failed to parse Vehicle Status JSON: {ex.Message}");
+                SimHub.Logging.Current.Error($"[LMU Electronic Bridge] LMU API: Failed : {ex.Message}");
                 return null;
             }
         }
