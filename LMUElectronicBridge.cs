@@ -35,6 +35,14 @@ namespace LMUElectronicBridge
         private DateTime _lastFailedSync = DateTime.MinValue;
         private int _failureCount = 0;
 
+        //----- Data Update Throttle to prevent excessive API calls during high-frequency updates
+        private DateTime _lastDataUpdate = DateTime.MinValue;
+        private const double DATA_UPDATE_INTERVAL_MS = 300; // ~3-4 times per second
+
+        //----- Async Overlap Guards -------------------------------------------
+        private bool _isUpdatingVehicleStatus = false;
+        private bool _isSyncingFromLMU = false;
+
         //----- Constants ------------------------------------------------------
         private const int LMU_MAX_VALUE_OFFSET = 1;
         private const string STATUS_NA = "N/A";
@@ -88,7 +96,8 @@ namespace LMUElectronicBridge
         /// Core update loop called by SimHub. Monitors game state to trigger API synchronizations.
         /// </summary>
         /// <param name="pluginManager">The SimHub PluginManager instance.</param>
-        /// <param name="data">The current game data state.</param>
+        /// <param name="data">The current game data state.</param
+        /// 
         public void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data)
         {
 
@@ -114,7 +123,12 @@ namespace LMUElectronicBridge
                 return;
             }
 
-                // Update Car Class Status
+            // ---- Throttle everything below to ~3-4x per second ----
+            if ((DateTime.UtcNow - _lastDataUpdate).TotalMilliseconds < DATA_UPDATE_INTERVAL_MS)
+                return;
+            _lastDataUpdate = DateTime.UtcNow;
+
+            // Update Car Class Status
             Settings.IsHypercar = IsHypercarClass(data.NewData.CarClass);
 
             // Continuously update vehicle status (team info and damage) from the API
@@ -175,38 +189,47 @@ namespace LMUElectronicBridge
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task UpdateVehicleStatusAsync()
         {
-            JObject vehicleData = await _apiClient.GetVehicleStatusDataAsync();
-            if (vehicleData == null) return;
-
-            // Parse suspension damage array [FL, FR, RL, RR]
-            JArray suspensionArray = vehicleData["suspensionDamage"] as JArray;
-            if (suspensionArray != null && suspensionArray.Count == 4)
+            if (_isUpdatingVehicleStatus) return;
+            _isUpdatingVehicleStatus = true;
+            try
             {
-                Settings.SuspensionDamage_FL = suspensionArray[0]?.Value<double>() ?? -1.0;
-                Settings.SuspensionDamage_FR = suspensionArray[1]?.Value<double>() ?? -1.0;
-                Settings.SuspensionDamage_RL = suspensionArray[2]?.Value<double>() ?? -1.0;
-                Settings.SuspensionDamage_RR = suspensionArray[3]?.Value<double>() ?? -1.0;
+                JObject vehicleData = await _apiClient.GetVehicleStatusDataAsync();
+                if (vehicleData == null) return;
 
-                // Calculate average suspension damage
-                Settings.SuspensionDamage_Avg = (Settings.SuspensionDamage_FL +
-                                                  Settings.SuspensionDamage_FR +
-                                                  Settings.SuspensionDamage_RL +
-                                                  Settings.SuspensionDamage_RR) / 4.0;
+                // Parse suspension damage array [FL, FR, RL, RR]
+                JArray suspensionArray = vehicleData["suspensionDamage"] as JArray;
+                if (suspensionArray != null && suspensionArray.Count == 4)
+                {
+                    Settings.SuspensionDamage_FL = suspensionArray[0]?.Value<double>() ?? -1.0;
+                    Settings.SuspensionDamage_FR = suspensionArray[1]?.Value<double>() ?? -1.0;
+                    Settings.SuspensionDamage_RL = suspensionArray[2]?.Value<double>() ?? -1.0;
+                    Settings.SuspensionDamage_RR = suspensionArray[3]?.Value<double>() ?? -1.0;
+
+                    // Calculate average suspension damage
+                    Settings.SuspensionDamage_Avg = (Settings.SuspensionDamage_FL +
+                                                      Settings.SuspensionDamage_FR +
+                                                      Settings.SuspensionDamage_RL +
+                                                      Settings.SuspensionDamage_RR) / 4.0;
+                }
+
+                // Parse aero damage
+                Settings.AeroDamage = vehicleData["aeroDamage"]?.Value<double>() ?? -1.0;
+
+                // Parse team information
+                JToken teamData = vehicleData["teamInfo"];
+                if (teamData != null)
+                {
+                    Settings.TeamName = teamData["teamName"]?.ToString() ?? STATUS_NA;
+                    Settings.VehicleName = teamData["vehicleName"]?.ToString() ?? STATUS_NA;
+                }
+
+                // Notify SimHub of property changes
+                OnPropertyChanged(nameof(Settings));
             }
-
-            // Parse aero damage
-            Settings.AeroDamage = vehicleData["aeroDamage"]?.Value<double>() ?? -1.0;
-
-            // Parse team information
-            JToken teamData = vehicleData["teamInfo"];
-            if (teamData != null)
+            finally
             {
-                Settings.TeamName = teamData["teamName"]?.ToString() ?? STATUS_NA;
-                Settings.VehicleName = teamData["vehicleName"]?.ToString() ?? STATUS_NA;
+                _isUpdatingVehicleStatus = false;
             }
-
-            // Notify SimHub of property changes
-            OnPropertyChanged(nameof(Settings));
         }
 
         /// <summary>
@@ -216,43 +239,52 @@ namespace LMUElectronicBridge
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task SyncAllFromLMU()
         {
-            // Fetch garage data for electronic settings only
-            JObject json = await _apiClient.GetRawGarageDataAsync();
-            if (json == null) return;
-
-            // Update team lookup profile if team name is available
-            if (!string.IsNullOrEmpty(Settings.VehicleName) && Settings.VehicleName != STATUS_NA)
+            if (_isSyncingFromLMU) return;
+            _isSyncingFromLMU = true;
+            try
             {
-                Settings.ActiveTeamProfile = new TeamLookupProfile(Settings.VehicleName);
-            }
+                // Fetch garage data for electronic settings only
+                JObject json = await _apiClient.GetRawGarageDataAsync();
+                if (json == null) return;
 
-            foreach (var prop in _propCache.Values)
-            {
-                var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();
-                if (attr == null) continue;
-
-                var token = json.SelectToken(attr.JsonKey);
-                if (token != null && token.HasValues)
+                // Update team lookup profile if team name is available
+                if (!string.IsNullOrEmpty(Settings.VehicleName) && Settings.VehicleName != STATUS_NA)
                 {
-                    int val = Convert.ToInt32(token["value"]);
-                    int min = Convert.ToInt32(token["minValue"]);
-                    int max = Convert.ToInt32(token["maxValue"]) - LMU_MAX_VALUE_OFFSET;
-                    string apiString = token["stringValue"]?.ToString();
-
-                    // Update Numerics
-                    prop.SetValue(Settings, val);
-                    GetCachedProp(prop.Name + "_Max")?.SetValue(Settings, max);
-                    GetCachedProp(prop.Name + "_Min")?.SetValue(Settings, min);
-
-                    // Logic Check for TC Linking
-                    if (prop.Name == "TC_Slip")
-                        _isTcSlipLinked = apiString != null && apiString.Contains(STATUS_LINKED);
-
-                    // Centralized String Update
-                    UpdateStringLogic(prop.Name, val, max, min, apiString, attr.TableName, true);
+                    Settings.ActiveTeamProfile = new TeamLookupProfile(Settings.VehicleName);
                 }
+
+                foreach (var prop in _propCache.Values)
+                {
+                    var attr = prop.GetCustomAttribute<LmuPropertyAttribute>();
+                    if (attr == null) continue;
+
+                    var token = json.SelectToken(attr.JsonKey);
+                    if (token != null && token.HasValues)
+                    {
+                        int val = Convert.ToInt32(token["value"]);
+                        int min = Convert.ToInt32(token["minValue"]);
+                        int max = Convert.ToInt32(token["maxValue"]) - LMU_MAX_VALUE_OFFSET;
+                        string apiString = token["stringValue"]?.ToString();
+
+                        // Update Numerics
+                        prop.SetValue(Settings, val);
+                        GetCachedProp(prop.Name + "_Max")?.SetValue(Settings, max);
+                        GetCachedProp(prop.Name + "_Min")?.SetValue(Settings, min);
+
+                        // Logic Check for TC Linking
+                        if (prop.Name == "TC_Slip")
+                            _isTcSlipLinked = apiString != null && apiString.Contains(STATUS_LINKED);
+
+                        // Centralized String Update
+                        UpdateStringLogic(prop.Name, val, max, min, apiString, attr.TableName, true);
+                    }
+                }
+                OnPropertyChanged(nameof(Settings));
             }
-            OnPropertyChanged(nameof(Settings));
+            finally
+            {
+                _isSyncingFromLMU = false;
+            }
         }
 
         /// <summary>
