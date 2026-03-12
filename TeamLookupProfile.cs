@@ -221,7 +221,7 @@ namespace LMUElectronicBridge
         {
             // Shared antisway bar positions for common teams without specific mapping
             public static readonly string[] SharedAntisway =
-                { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" };
+                { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8","P9", "P10", "P11", "P12", "P13", "P14", "P15" };
 
             public static readonly string[] SharedTeams =
             {
@@ -301,7 +301,7 @@ namespace LMUElectronicBridge
                 { "Alpine Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15", "P16" } },
                 { "BMWMH Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
                 { "VLMDH Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
-                { "Porsche 963 Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
+                { "Porsche 963 Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
                 { "SC63 Custom Team", new List<string> { "Detached", "14.5-TK 0deg", "14.5-TK 30deg", "14.5-TK 45deg", "14.5-TK 60deg", "14.5-TK 90deg", "16-TK 0deg", "16-TK 30deg", "16-TK 45deg", "16-TK 60deg", "16-TK 90deg", "17.5-TK 0deg", "17.5-TK 30deg", "17.5-TK 45deg", "17.5-TK 60deg", "17.5-TK 90deg", "20.5-TK 0deg", "20.5-TK 30deg", "20.5-TK 45deg", "20.5-TK 60deg", "20.5-TK 90deg" } },
                 { "499P Custom Team", new List<string> { "Detached", "A-P1", "A-P2", "A-P3", "A-P4", "A-P5", "B-P1", "B-P2", "B-P3", "B-P4", "B-P5", "C-P1", "C-P2", "C-P3", "C-P4", "C-P5", "D-P1", "D-P2", "D-P3", "D-P4", "D-P5", "E-P1", "E-P2", "E-P3", "E-P4", "E-P5" } },
                 { "9x8 Wing Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
