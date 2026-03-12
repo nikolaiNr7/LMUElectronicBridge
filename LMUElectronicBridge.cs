@@ -450,6 +450,10 @@ namespace LMUElectronicBridge
                 this.AttachDelegate(name, () => prop.GetValue(Settings));
                 this.AttachDelegate(name + "_Str", () => GetCachedProp(name + "_Str")?.GetValue(Settings));
 
+                // add min max values of them 
+                this.AttachDelegate(name + "_Min", () => GetCachedProp(name + "_Min")?.GetValue(Settings));
+                this.AttachDelegate(name + "_Max", () => GetCachedProp(name + "_Max")?.GetValue(Settings));
+
                 this.AddAction(name + "Increase", (a, b) => ChangeValue(prop, 1, attr.TableName));
                 this.AddAction(name + "Decrease", (a, b) => ChangeValue(prop, -1, attr.TableName));
             }
