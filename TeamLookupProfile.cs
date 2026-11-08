@@ -251,6 +251,8 @@ namespace LMUElectronicBridge
                 "Cadillac Whelen",
                 "Cadillac WTR",
                 "VLMDH Custom Team",
+                "Genesis Magma Racing",
+                "Genesis Custom Team",
                 "Hertz Team Jota",
                 "Porsche Penske Motorsport",
                 "Porsche 963 Custom Team",
@@ -307,7 +309,9 @@ namespace LMUElectronicBridge
                 { "9x8 Wing Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
                 { "Toyota GR010 Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
                 { "Glickenhaus Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
-                { "Isotta Fraschini Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7" } }
+                { "Isotta Fraschini Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7" } },
+                { "Genesis Magma Racing", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
+                { "Genesis Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } }
             };
 
             // Rear ARB mappings per team
@@ -336,7 +340,9 @@ namespace LMUElectronicBridge
                 { "9x8 Wing Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
                 { "Toyota GR010 Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
                 { "Glickenhaus Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" } },
-                { "Isotta Fraschini Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7" } }
+                { "Isotta Fraschini Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5", "P6", "P7" } },
+                { "Genesis Magma Racing", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } },
+                { "Genesis Custom Team", new List<string> { "Detached", "P1", "P2", "P3", "P4", "P5" } }
             };
         }
     }
